@@ -1,22 +1,22 @@
-import mongoose, { model, Schema } from "mongoose";
-import { compareHash, getHash } from "@backend/utils/genHash";
+import mongoose, { CallbackError } from "mongoose";
+import { compareHash, getHash } from "../utils/genHash";
 
-const usersSchema = new Schema(
+const UserSchema = new mongoose.Schema(
   {
     username: {
       type: String,
-      required: [true, "username is required"],
+      required: [true, "value is missed"],
     },
     email: {
       type: String,
       unique: true,
-      required: [true, "email is required"],
+      required: [true, "value is missed"],
       lowercase: true,
       trim: true,
     },
     password: {
       type: String,
-      required: [true, "password is required"],
+      required: [true, "value is missed"],
       minlength: [6, "password must be at least 6 characters long"],
     },
     cartItems: [
@@ -26,7 +26,7 @@ const usersSchema = new Schema(
           default: 1,
         },
         product: {
-          type: Schema.Types.ObjectId,
+          type: mongoose.Schema.Types.ObjectId,
           ref: "Product",
         },
       },
@@ -42,18 +42,20 @@ const usersSchema = new Schema(
   }
 );
 
-const User = model("User", usersSchema);
-
-usersSchema.pre("save", async function (next) {
+UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
-  this.password = await getHash(this.password);
-  next();
   try {
-  } catch (error) {}
+    this.password = await getHash(this.password);
+    next();
+  } catch (err) {
+    console.log(err);
+
+    next(new Error("Error in Salt"));
+  }
 });
 
-usersSchema.methods.comparePassword = async function (password: string) {
+UserSchema.methods.comparePassword = async function (password: string) {
   return compareHash(password, this.password);
 };
 
-export default User;
+export const UserModel = mongoose.model("User", UserSchema);

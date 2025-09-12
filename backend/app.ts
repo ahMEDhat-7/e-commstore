@@ -1,4 +1,4 @@
-import express, { Express } from "express";
+import express, { Express, NextFunction, Request, Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
@@ -14,5 +14,10 @@ app.use(morgan("combined"));
 
 // Routes
 app.use("/api/auth", authRoute);
+
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  res.status(400).json({ name: err.name, error: err.message });
+  next();
+});
 
 export default app;

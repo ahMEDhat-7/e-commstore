@@ -33,7 +33,7 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "bcryptjs": "^3.0.2",
+    "bcrypt": "^3.0.2",
     "cloudinary": "^2.7.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
