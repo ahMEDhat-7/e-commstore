@@ -1,0 +1,9 @@
+{
+  "watch": ["backend"],
+  "ext": "ts,js,json",
+  "ignore": ["dist", "node_modules", "frontend"],
+  "exec": "ts-node backend/server.ts",
+  "env": {
+    "NODE_ENV": "development"
+  }
+}
