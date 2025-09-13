@@ -1,5 +1,5 @@
-import mongoose, { CallbackError } from "mongoose";
-import { compareHash, getHash } from "../utils/genHash";
+import mongoose from "mongoose";
+import { compareHash, getHash } from "../utils/hashHelpers";
 
 const UserSchema = new mongoose.Schema(
   {

@@ -2,6 +2,8 @@ import { NextFunction, Request, Response } from "express";
 import asyncWrapper from "../middlewares/asyncWrapper";
 import { LoginDto, RegisterDto } from "../dtos/auth.dto";
 import { UserModel } from "../models/user.model";
+import { storeRefreshToken } from "../config/redis";
+import { genToken } from "../utils/tokenHelpers";
 
 const signup = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -17,9 +19,10 @@ const signup = asyncWrapper(
       await user.save();
 
       // token
-      // const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "1d" });
+      const { accessToken, refreshToken } = genToken(user._id.toString());
+      await storeRefreshToken(user._id.toString(), refreshToken);
 
-      return res.status(201).json(user);
+      return res.status(201).json({ accessToken, refreshToken });
     } catch (err) {
       return next(err);
     }

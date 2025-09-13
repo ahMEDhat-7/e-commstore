@@ -8,8 +8,10 @@ export default async () => {
     }
 
     const connect = await mongoose.connect(mongoUrl);
-    console.log(`[+] DB connected successfully at ${connect.connection.host}`);
+    console.log(
+      `[+] MongoDB connected successfully at ${connect.connection.host}`
+    );
   } catch (error) {
-    console.log("[-] Unable to connect to DB ", error);
+    console.log("[-] Unable to connect to MongoDB ", error);
   }
 };
