@@ -54,8 +54,4 @@ UserSchema.pre("save", async function (next) {
   }
 });
 
-UserSchema.methods.comparePassword = async function (password: string) {
-  return compareHash(password, this.password);
-};
-
 export const UserModel = mongoose.model("User", UserSchema);

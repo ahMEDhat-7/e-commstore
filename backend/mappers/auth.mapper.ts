@@ -1,13 +1,13 @@
 // import { AuthResponseDto } from "../dtos/auth.dto";
 
 // export function toAuthResponse(
-//   user: ,
+//   user: new ,
 //   token: string
 // ): AuthResponseDto {
 //   return {
 //     token,
 //     user: {
-//       id: user._id.toString(),
+//       id: user._,
 //       username: user.username,
 //       email: user.email,
 //     },

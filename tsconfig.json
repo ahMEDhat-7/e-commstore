@@ -10,10 +10,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "baseUrl": ".",
-    "paths": {
-      "@backend/*": ["./backend/*"]
-    }
+    "baseUrl": "."
   },
   "include": ["backend/**/*"],
   "exclude": ["node_modules", "dist", "frontend"]

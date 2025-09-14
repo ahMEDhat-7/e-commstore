@@ -5,6 +5,9 @@ const redisUrl = process.env.REDIS_URL as string;
 
 const redis = new Redis(redisUrl);
 
-export const storeRefreshToken = async (userId: string, refToken: string) => {
-  await redis.set(`refresh_token:${userId}`, refToken, "EX", 7 * 24 * 60 * 60); // 7d
-};
+if (!redis) {
+  throw new Error("Unable to connect to redis");
+}
+console.log(`[+] Redis connected successfully`);
+
+export { redis };

@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import authRoute from "./routes/auth.route";
+import cookieParser from "cookie-parser";
 
 const app: Express = express();
 
@@ -10,6 +11,7 @@ const app: Express = express();
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 app.use(morgan("combined"));
 
 // Routes

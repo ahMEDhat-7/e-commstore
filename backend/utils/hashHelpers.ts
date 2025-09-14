@@ -1,6 +1,6 @@
 import { compare, genSalt, hash } from "bcryptjs";
 
-export const getHash = async (password: string) => {
+const getHash = async (password: string) => {
   try {
     if (!process.env.HASH_SALT) {
       throw new Error("HASH SALT is not defined in environment variables");
@@ -13,9 +13,12 @@ export const getHash = async (password: string) => {
   }
 };
 
-export const compareHash = async (password: string, hash: string) => {
-try {
+const compareHash = async (password: string, hash: string) => {
+  try {
     return compare(password, hash);
-} catch (error) {
-  throw error; 
-}};
+  } catch (error) {
+    throw error;
+  }
+};
+
+export { getHash, compareHash };
