@@ -2,6 +2,10 @@
 import axios from "axios";
 import type { LoginType, SignupType } from "../types";
 
+// Bug cookies can't be sent in req
+// we need to fix that
+
+
 const authAPI = axios.create({
   baseURL:
     import.meta.env.MODE === "development"
