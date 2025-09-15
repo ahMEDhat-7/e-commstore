@@ -1,37 +1,39 @@
-// api.ts
+// authAPI.ts
 import axios from "axios";
 import type { LoginType, SignupType } from "../types";
 
-const BASE_URL = "http://www.localhost:7000/api/auth";
-const API = axios.create({
-  baseURL: BASE_URL,
-  withCredentials: true,
+const authAPI = axios.create({
+  baseURL:
+    import.meta.env.MODE === "development"
+      ? "http://www.localhost:7000/api/auth"
+      : "/authAPI",
+  withCredentials: true, // send cookies to the server
 });
 
 export const loginAPI = (userData: LoginType) => {
-  return API.post("/login", userData);
+  return authAPI.post("/login", userData);
 };
 
 export const signupAPI = (userData: SignupType) => {
-  return API.post("/signup", userData);
+  return authAPI.post("/signup", userData);
 };
 
 export const logoutAPI = () => {
-  return API.post("/logout");
+  return authAPI.post("/logout");
 };
 
 export const profileAPI = () => {
-  return API.get("/profile");
+  return authAPI.get("/profile");
 };
 
 export const refreshAPI = () => {
-  return API.post("/refresh");
+  return authAPI.post("/refresh");
 };
 
 export const forgotPasswordAPI = (email: string) => {
-  return API.post("/forgot-password", { email });
+  return authAPI.post("/forgot-password", { email });
 };
 
 export const resetPasswordAPI = (token: string, newPassword: string) => {
-  return API.post(`/reset-password/${token}`, { password: newPassword });
+  return authAPI.post(`/reset-password/${token}`, { password: newPassword });
 };

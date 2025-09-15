@@ -75,7 +75,7 @@ const login = asyncWrapper(
             email: user.email,
             role: user.role,
           },
-          message: "user created successfully",
+          message: "you logged in successfully",
         });
       }
     } catch (err) {
@@ -87,14 +87,15 @@ const login = asyncWrapper(
 const logout = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const refreshToken = req.cookies.refreshToken;
+      const refreshToken = req.headers.authorization;
+
       if (refreshToken) {
         const user = verifyRefreshToken(refreshToken);
         await removeRefreshToken(user.userId);
-        clearCookies(res);
-
-        return res.status(200).json({ message: "you logged out." });
       }
+      clearCookies(res);
+
+      return res.status(200).json({ message: "you logged out." });
     } catch (error) {
       return next(error);
     }

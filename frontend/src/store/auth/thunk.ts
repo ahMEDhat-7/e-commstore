@@ -1,5 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { loginAPI, signupAPI } from "../../common/api/authApi";
+import { loginAPI, logoutAPI, signupAPI } from "../../common/api/authApi";
 import type { LoginType, SignupType } from "../../common/types";
 import { toast } from "react-hot-toast";
 import type { AxiosError } from "axios";
@@ -39,4 +39,15 @@ const signupThunk = createAsyncThunk(
     }
   }
 );
-export { loginThunk, signupThunk };
+
+const logoutThunk = createAsyncThunk("auth/logout", async () => {
+  try {
+    await logoutAPI();
+    toast.success("you logged out.");
+  } catch (err) {
+    const error = err as AxiosError;
+    toast.error((error.response?.data as any).message);
+  }
+});
+
+export { loginThunk, signupThunk, logoutThunk };

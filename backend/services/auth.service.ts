@@ -1,20 +1,22 @@
 import { redis } from "../config/redis";
 import { Response } from "express";
 
+const isProduction = (process.env.NODE_ENV as string) === "prod";
+
 const setCookies = (
   res: Response,
   tokens: { accessToken: string; refreshToken: string }
 ) => {
   res.cookie("accessToken", tokens.accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "prod",
-    sameSite: "strict",
+    secure: isProduction,
+    sameSite: "lax",
     maxAge: 30 * 60 * 1000,
   });
   res.cookie("refreshToken", tokens.refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "prod",
-    sameSite: "strict",
+    secure: isProduction,
+    sameSite: "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };
