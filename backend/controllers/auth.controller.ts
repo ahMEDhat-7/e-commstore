@@ -87,8 +87,7 @@ const login = asyncWrapper(
 const logout = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const refreshToken = req.headers.authorization;
-
+      const refreshToken = req.cookies.refreshToken;
       if (refreshToken) {
         const user = verifyRefreshToken(refreshToken);
         await removeRefreshToken(user.userId);
