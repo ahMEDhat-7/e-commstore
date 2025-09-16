@@ -28,7 +28,7 @@ export const getFeaturedProducts = asyncWrapper(
       }
 
       // if not in redis, fetch from mongodb
-      featuredProducts = await findProductsFeatured();
+    //   featuredProducts = await findProductsFeatured();
 
       if (!featuredProducts) {
         return res.status(404).json({ message: "No featured products found" });
