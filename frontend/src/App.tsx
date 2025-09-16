@@ -1,11 +1,33 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import Home from "./pages/Home";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import NavBar from "./components/NavBar";
 import { Toaster } from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch } from "./store/store";
+import { selectAuth } from "./store/auth/authSlice";
+import { useEffect } from "react";
+import { profileThunk } from "./store/auth/thunk";
+import LoadingSpinner from "./components/LoadingSpinner";
+import Admin from "./pages/Admin";
+import PurchaseSuccess from "./pages/PurchaseSuccess";
+import PurchaseCancel from "./pages/PurchaseCancel";
 
 function App() {
+  const dispatch = useDispatch<AppDispatch>();
+  const { user, isLoading } = useSelector(selectAuth);
+
+  useEffect(() => {
+    dispatch(profileThunk());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (!user) return;
+  }, [user]);
+
+  if (isLoading) return <LoadingSpinner />;
+
   return (
     <div className="min-h-screen bg-gray-900 text-white relative overflow-hidden">
       {/* Background gradient */}
@@ -18,8 +40,28 @@ function App() {
         <NavBar />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/login" element={<Login />} />
+          <Route
+            path="/signup"
+            element={!user ? <Signup /> : <Navigate to={"/"} />}
+          />
+          <Route
+            path="/login"
+            element={!user ? <Login /> : <Navigate to={"/"} />}
+          />
+          <Route
+            path="/dashboard"
+            element={
+              user?.role === "admin" ? <Admin /> : <Navigate to="/login" />
+            }
+          />
+          <Route
+            path="/purchase-success"
+            element={user ? <PurchaseSuccess /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/purchase-cancel"
+            element={user ? <PurchaseCancel /> : <Navigate to="/login" />}
+          />
         </Routes>
       </div>
       <Toaster />

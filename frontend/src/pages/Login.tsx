@@ -17,7 +17,6 @@ const Login = () => {
     e.preventDefault();
 
     dispatch(loginThunk({ email, password }));
-
     user &&  navigate("/");
   };
 
