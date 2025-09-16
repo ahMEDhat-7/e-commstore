@@ -1,4 +1,4 @@
-import { redis } from "../config/redis";
+import  redis  from "../config/redis";
 import { Response } from "express";
 
 const isProduction = (process.env.NODE_ENV as string) === "prod";

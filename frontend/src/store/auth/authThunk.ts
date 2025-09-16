@@ -3,6 +3,7 @@ import {
   loginAPI,
   logoutAPI,
   profileAPI,
+  refreshAPI,
   signupAPI,
 } from "../../common/api/authApi";
 import type { LoginType, SignupType } from "../../common/types";
@@ -14,8 +15,10 @@ const loginThunk = createAsyncThunk(
   async (userData: LoginType, thunkAPI) => {
     try {
       const user = await loginAPI(userData);
+      console.log(user.data.user);
+      
       toast.success(user.data.message);
-      return user.data;
+      return user.data.user;
     } catch (err) {
       const error = err as AxiosError;
 
@@ -59,10 +62,17 @@ const profileThunk = createAsyncThunk("auth/profile", async () => {
   try {
     const user = await profileAPI();
     return user;
+  } catch (err) {}
+});
+
+const refreshThunk = createAsyncThunk("auth/refresh", async () => {
+  try {
+    const user = await refreshAPI();
+    return user;
   } catch (err) {
     const error = err as AxiosError;
     toast.error((error.response?.data as any).message);
   }
 });
 
-export { loginThunk, signupThunk, logoutThunk,  profileThunk};
+export { loginThunk, signupThunk, logoutThunk, profileThunk, refreshThunk };

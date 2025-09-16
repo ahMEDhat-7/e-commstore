@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch } from "./store/store";
 import { selectAuth } from "./store/auth/authSlice";
 import { useEffect } from "react";
-import { profileThunk } from "./store/auth/thunk";
+import { profileThunk } from "./store/auth/authThunk";
 import LoadingSpinner from "./components/LoadingSpinner";
 import Admin from "./pages/Admin";
 import PurchaseSuccess from "./pages/PurchaseSuccess";
@@ -20,10 +20,11 @@ function App() {
 
   useEffect(() => {
     dispatch(profileThunk());
-  }, [dispatch]);
+  }, [profileThunk]);
 
   useEffect(() => {
     if (!user) return;
+    console.log(user.role);
   }, [user]);
 
   if (isLoading) return <LoadingSpinner />;

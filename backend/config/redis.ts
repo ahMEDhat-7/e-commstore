@@ -10,4 +10,4 @@ if (!redis) {
 }
 console.log(`[+] Redis connected successfully`);
 
-export { redis };
+export default redis;

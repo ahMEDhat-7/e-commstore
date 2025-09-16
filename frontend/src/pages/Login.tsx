@@ -1,25 +1,23 @@
 import { useState, type FormEvent } from "react";
 import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { LogIn, Mail, Lock, ArrowRight, Loader } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectAuth } from "../store/auth/authSlice";
-import { loginThunk } from "../store/auth/thunk";
+import { loginThunk } from "../store/auth/authThunk";
 import type { AppDispatch } from "../store/store";
+
 const Login = () => {
-  const navigate = useNavigate();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const dispatch = useDispatch<AppDispatch>();
-  const { user, isLoading } = useSelector(selectAuth);
+  const { isLoading } = useSelector(selectAuth);
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     dispatch(loginThunk({ email, password }));
-    user &&  navigate("/");
   };
-
   return (
     <div className="flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <motion.div

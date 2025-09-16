@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { RegisterDto } from "../dtos/auth.dto";
-import { UserModel } from "../models/user.model";
+import UserModel from "../models/user.model";
 
 const createUser = async (user: RegisterDto) => {
   const newUser = new UserModel({ ...user });

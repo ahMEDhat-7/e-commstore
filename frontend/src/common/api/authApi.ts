@@ -18,7 +18,11 @@ export const loginAPI = (userData: LoginType) => {
 };
 
 export const signupAPI = (userData: SignupType) => {
-  return authAPI.post("/signup", userData);
+  return authAPI.post("/signup", {
+    username: userData.username,
+    email: userData.email,
+    password: userData.password,
+  });
 };
 
 export const logoutAPI = () => {

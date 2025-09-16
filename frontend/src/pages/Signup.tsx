@@ -1,14 +1,13 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { UserPlus, Mail, Lock, User, ArrowRight, Loader } from "lucide-react";
 import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { selectAuth } from "../store/auth/authSlice";
-import { signupThunk } from "../store/auth/thunk";
+import { signupThunk } from "../store/auth/authThunk";
 import type { AppDispatch } from "../store/store";
 
 const Signup = () => {
-  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     username: "",
@@ -16,13 +15,13 @@ const Signup = () => {
     password: "",
     confirmPassword: "",
   });
-  const { user, isLoading } = useSelector(selectAuth);
+  const { isLoading } = useSelector(selectAuth);
   const dispatch = useDispatch<AppDispatch>();
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     dispatch(signupThunk(formData));
-    user && navigate("/");
+
   };
 
   return (

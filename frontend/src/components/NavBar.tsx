@@ -3,10 +3,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { selectAuth } from "../store/auth/authSlice";
 import type { AppDispatch } from "../store/store";
-import { logoutThunk } from "../store/auth/thunk";
+import { logoutThunk } from "../store/auth/authThunk";
 
 const NavBar = () => {
-    const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const { user } = useSelector(selectAuth);
   const dispatch = useDispatch<AppDispatch>();
   const isAdmin = user?.role === "admin";
@@ -14,7 +14,7 @@ const NavBar = () => {
 
   const handleLogout = () => {
     dispatch(logoutThunk());
-    !user &&  navigate("/login");
+    !user && navigate("/login");
   };
   return (
     <header className="fixed top-0 left-0 w-full bg-gray-900 bg-opacity-90 backdrop-blur-md shadow-lg z-40 transition-all duration-300 border-b border-emerald-800">
