@@ -17,7 +17,6 @@ const signup = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { username, email, password } = req.body as RegisterDto;
-
       const existingUser = await findUser(email);
       if (existingUser) {
         return res.status(400).json({ message: "Email already in use" });
