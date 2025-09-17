@@ -1,3 +1,8 @@
-export class CreateProductDto {}
-
-export class UpdateProductDto {}
+export interface CreateProductDto {
+  name: string;
+  desc: string;
+  price: number;
+  image: string;
+  category: string;
+  isFeatured?: boolean;
+}

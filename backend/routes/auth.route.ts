@@ -6,7 +6,7 @@ import {
   refresh,
   signup,
 } from "../controllers/auth.controller";
-import { protectedRoute } from "../middlewares/protectedRoute";
+import { protectRoute } from "../middlewares/auth.middleware";
 
 const router = express.Router();
 
@@ -17,6 +17,6 @@ router.route("/login").post(login);
 router.route("/logout").post(logout);
 
 router.route("/refresh").post(refresh);
-router.route("/profile").get(protectedRoute, getProfile);
+router.route("/profile").get(protectRoute, getProfile);
 
 export default router;

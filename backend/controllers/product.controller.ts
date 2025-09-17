@@ -1,12 +1,13 @@
-import redis from "../config/redis";
 import cloudinary from "../config/cloudinary";
 import ProductModel from "../models/product.model";
-import asyncWrapper from "backend/middlewares/asyncWrapper";
+import asyncWrapper from "../middlewares/asyncWrapper";
 import { NextFunction, Request, Response } from "express";
 import {
   findProducts,
   findProductsFeatured,
-} from "backend/services/product.service";
+  getFeaturedProductsCached,
+  setFeaturedProductsCached,
+} from "../services/product.service";
 
 export const getAllProducts = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -22,13 +23,13 @@ export const getAllProducts = asyncWrapper(
 export const getFeaturedProducts = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      let featuredProducts = await redis.get("featured_products");
+      let featuredProducts: any = await getFeaturedProductsCached();
       if (featuredProducts) {
-        return res.json(JSON.parse(featuredProducts));
+        return res.status(200).json(JSON.parse(featuredProducts));
       }
 
       // if not in redis, fetch from mongodb
-    //   featuredProducts = await findProductsFeatured();
+      featuredProducts = await findProductsFeatured();
 
       if (!featuredProducts) {
         return res.status(404).json({ message: "No featured products found" });
@@ -36,7 +37,7 @@ export const getFeaturedProducts = asyncWrapper(
 
       // store in redis for future quick access
 
-      await redis.set("featured_products", JSON.stringify(featuredProducts));
+      await setFeaturedProductsCached(JSON.stringify(featuredProducts));
 
       res.json(featuredProducts);
     } catch (error) {
@@ -165,9 +166,8 @@ async function updateFeaturedProductsCache() {
     const featuredProducts = await ProductModel.find({
       isFeatured: true,
     }).lean();
-    await redis.set("featured_products", JSON.stringify(featuredProducts));
+    await getFeaturedProductsCached();
   } catch (error) {
-    console.log("Error:" , error);
-    
+    console.log("Error:", error);
   }
 }

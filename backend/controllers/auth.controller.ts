@@ -18,15 +18,13 @@ const signup = asyncWrapper(
     try {
       const { username, email, password } = req.body as RegisterDto;
 
-      console.log(req.body);
-
       const existingUser = await findUser(email);
       if (existingUser) {
         return res.status(400).json({ message: "Email already in use" });
       }
 
       const user = await createUser({ username, email, password });
-      
+
       // token
       const payload: JwtPayload = {
         userId: user._id.toString(),
