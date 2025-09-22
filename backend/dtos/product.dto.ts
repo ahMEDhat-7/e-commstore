@@ -1,6 +1,6 @@
 export interface CreateProductDto {
   name: string;
-  desc: string;
+  description: string;
   price: number;
   image: string;
   category: string;

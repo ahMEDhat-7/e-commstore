@@ -3,11 +3,13 @@ import ProductModel from "../models/product.model";
 import asyncWrapper from "../middlewares/asyncWrapper";
 import { NextFunction, Request, Response } from "express";
 import {
+  createProduct,
   findProducts,
   findProductsFeatured,
   getFeaturedProductsCached,
   setFeaturedProductsCached,
 } from "../services/product.service";
+import { CreateProductDto } from "backend/dtos/product.dto";
 
 export const getAllProducts = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -23,53 +25,52 @@ export const getAllProducts = asyncWrapper(
 export const getFeaturedProducts = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      let featuredProducts: any = await getFeaturedProductsCached();
-      if (featuredProducts) {
-        return res.status(200).json(JSON.parse(featuredProducts));
+      let products: any = await getFeaturedProductsCached();
+      if (products) {
+        return res.status(200).json({ products: JSON.parse(products) });
       }
 
       // if not in redis, fetch from mongodb
-      featuredProducts = await findProductsFeatured();
+      products = await findProductsFeatured();
 
-      if (!featuredProducts) {
+      if (!products) {
         return res.status(404).json({ message: "No featured products found" });
       }
 
       // store in redis for future quick access
+      await setFeaturedProductsCached(JSON.stringify(products));
 
-      await setFeaturedProductsCached(JSON.stringify(featuredProducts));
-
-      res.json(featuredProducts);
+      res.json({ products });
     } catch (error) {
       return next(error);
     }
   }
 );
 
-export const createProduct = asyncWrapper(
+export const createNewProduct = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { name, description, price, image, category } = req.body;
+      const { name, description, price, image, category } =
+        req.body as CreateProductDto;
 
-      let cloudinaryResponse = null;
+      console.log(name, description, price, image, category);
 
-      if (image) {
-        cloudinaryResponse = await cloudinary.uploader.upload(image, {
-          folder: "products",
-        });
-      }
+      // let cloudinaryResponse = null;
 
-      const product = await ProductModel.create({
-        name,
-        description,
-        price,
-        image: cloudinaryResponse?.secure_url
-          ? cloudinaryResponse.secure_url
-          : "",
-        category,
-      });
+      // if (image) {
+      //   cloudinaryResponse = await cloudinary.uploader.upload(image, {
+      //     folder: "products",
+      //   });
+      // }
+      // cloudinaryResponse?.secure_url
+      //     ? cloudinaryResponse.secure_url
+      //     : ""
 
-      res.status(201).json(product);
+      const product = await createProduct(req.body);
+      // await updateFeaturedProductsCache();
+      // await setFeaturedProductsCached(JSON.stringify(product));
+
+      return res.status(201).json({ product });
     } catch (error) {
       return next(error);
     }
@@ -122,7 +123,7 @@ export const getRecommendedProducts = asyncWrapper(
         },
       ]);
 
-      res.json(products);
+      res.json({ products });
     } catch (error) {
       return next(error);
     }

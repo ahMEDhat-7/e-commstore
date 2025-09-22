@@ -1,6 +1,6 @@
-import express from "express";
+import { Router } from "express";
 import {
-  createProduct,
+  createNewProduct,
   deleteProduct,
   getAllProducts,
   getFeaturedProducts,
@@ -10,12 +10,13 @@ import {
 } from "../controllers/product.controller";
 import { protectRoute, adminRoute } from "../middlewares/auth.middleware";
 
-const router = express.Router();
+const router = Router();
+
 router.get("/", protectRoute, adminRoute, getAllProducts);
 router.get("/featured", getFeaturedProducts);
 router.get("/category/:category", getProductsByCategory);
 router.get("/recommendations", getRecommendedProducts);
-router.post("/", protectRoute, adminRoute, createProduct);
+router.post("/", protectRoute, adminRoute, createNewProduct);
 router.patch("/:id", protectRoute, adminRoute, toggleFeaturedProduct);
 router.delete("/:id", protectRoute, adminRoute, deleteProduct);
 
