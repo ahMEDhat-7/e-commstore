@@ -45,7 +45,7 @@ const NavBar = () => {
                   className="inline-block mr-3 group-hover:text-emerald-400"
                   size={20}
                 />
-                {cart.length  > 0 && (
+                {cart.length > 0 && (
                   <span
                     className="absolute -top-3 left-2 bg-emerald-500 text-white rounded-full px-2 py-0.5 
 									text-xs group-hover:bg-emerald-400 transition duration-300 ease-in-out"
@@ -59,7 +59,7 @@ const NavBar = () => {
               <Link
                 className="bg-emerald-700 hover:bg-emerald-600 text-white px-3 py-1 rounded-md font-medium
 								 transition duration-300 ease-in-out flex items-center"
-                to={"/secret-dashboard"}
+                to={"/dashboard"}
               >
                 <Lock className="inline-block mr-1" size={18} />
                 <span className="hidden sm:inline">Dashboard</span>

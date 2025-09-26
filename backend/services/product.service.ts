@@ -13,11 +13,23 @@ const findProducts = async () => {
 const findProductById = async (id: string) => {
   return ProductModel.findOne({ _id: id });
 };
+const findProductByCategory = async (category: string) => {
+  return ProductModel.findOne({ category });
+};
+
 const findProductsFeatured = async () => {
   return ProductModel.find({ isFeatured: true }).lean();
 };
-const updateProduct = () => {};
-const removeProduct = () => {};
+const updateProduct = (id: string, product: CreateProductDto) => {
+  return ProductModel.findByIdAndUpdate(
+    { _id: id },
+    { ...product },
+    { new: true }
+  );
+};
+const removeProduct = (id: string) => {
+  return ProductModel.findByIdAndDelete({ _id: id });
+};
 
 const getFeaturedProductsCached = () => {
   return redis.get("featured_products");
@@ -34,6 +46,7 @@ export {
   removeProduct,
   findProductById,
   findProductsFeatured,
+  findProductByCategory,
   getFeaturedProductsCached,
   setFeaturedProductsCached,
 };

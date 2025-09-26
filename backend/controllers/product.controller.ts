@@ -4,10 +4,14 @@ import asyncWrapper from "../middlewares/asyncWrapper";
 import { NextFunction, Request, Response } from "express";
 import {
   createProduct,
+  findProductByCategory,
+  findProductById,
   findProducts,
   findProductsFeatured,
   getFeaturedProductsCached,
+  removeProduct,
   setFeaturedProductsCached,
+  updateProduct,
 } from "../services/product.service";
 import { CreateProductDto } from "backend/dtos/product.dto";
 
@@ -54,21 +58,22 @@ export const createNewProduct = asyncWrapper(
     try {
       const { name, description, price, image, category, isFeatured } =
         req.body as CreateProductDto;
+      console.log(image);
 
-      // let cloudinaryResponse = null;
+      let cloudinaryResponse = null;
 
-      // if (image) {
-      //   cloudinaryResponse = await cloudinary.uploader.upload(image, {
-      //     folder: "products",
-      //   });
-      // }
-      // cloudinaryResponse?.secure_url ? cloudinaryResponse.secure_url : "";
+      if (image) {
+        cloudinaryResponse = await cloudinary.uploader.upload(image, {
+          folder: "products",
+        });
+      }
+      const imageUrl = cloudinaryResponse?.secure_url || "";
 
       const product = await createProduct({
         name,
         description,
         price,
-        image,
+        image: imageUrl,
         category,
         isFeatured,
       });
@@ -84,11 +89,13 @@ export const createNewProduct = asyncWrapper(
 export const deleteProduct = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const product = await ProductModel.findById(req.params.id);
+      const product = await findProductById(req.params.id);
 
       if (!product) {
         return res.status(404).json({ message: "ProductModel not found" });
       }
+
+      console.log(product);
 
       if (product.image) {
         const publicId = product.image.split("/").pop()?.split(".")[0];
@@ -100,9 +107,9 @@ export const deleteProduct = asyncWrapper(
         }
       }
 
-      await ProductModel.findByIdAndDelete(req.params.id);
-
-      res.json({ message: "ProductModel deleted successfully" });
+      await removeProduct(req.params.id);
+      await updateFeaturedProductsCache();
+      return res.status(200).json({ message: "Product deleted successfully" });
     } catch (error) {
       return next(error);
     }
@@ -138,8 +145,8 @@ export const getProductsByCategory = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
     const { category } = req.params;
     try {
-      const products = await ProductModel.find({ category });
-      res.json({ products });
+      const products = await findProductByCategory(category);
+      return res.status(200).json({ products });
     } catch (error) {
       return next(error);
     }
@@ -149,14 +156,14 @@ export const getProductsByCategory = asyncWrapper(
 export const toggleFeaturedProduct = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const product = await ProductModel.findById(req.params.id);
+      const product = await findProductById(req.params.id);
       if (product) {
         product.isFeatured = !product.isFeatured;
-        const updatedProduct = await product.save();
+        const updatedProduct = await updateProduct(req.params.id, product);
         await updateFeaturedProductsCache();
-        res.json(updatedProduct);
+        return res.status(200).json({ updatedProduct });
       } else {
-        res.status(404).json({ message: "ProductModel not found" });
+        return res.status(404).json({ message: "ProductModel not found" });
       }
     } catch (error) {
       return next(error);
