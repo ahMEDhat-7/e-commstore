@@ -25,9 +25,11 @@ export const getAllProducts = asyncWrapper(
 export const getFeaturedProducts = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      let products: any = await getFeaturedProductsCached();
-      if (products) {
-        return res.status(200).json({ products: JSON.parse(products) });
+      let products: any = JSON.parse(
+        (await getFeaturedProductsCached()) as string
+      );
+      if (products.length > 0) {
+        return res.status(200).json({ products });
       }
 
       // if not in redis, fetch from mongodb
@@ -40,7 +42,7 @@ export const getFeaturedProducts = asyncWrapper(
       // store in redis for future quick access
       await setFeaturedProductsCached(JSON.stringify(products));
 
-      res.json({ products });
+      return res.status(200).json({ products });
     } catch (error) {
       return next(error);
     }
@@ -50,10 +52,8 @@ export const getFeaturedProducts = asyncWrapper(
 export const createNewProduct = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { name, description, price, image, category } =
+      const { name, description, price, image, category, isFeatured } =
         req.body as CreateProductDto;
-
-      console.log(name, description, price, image, category);
 
       // let cloudinaryResponse = null;
 
@@ -62,13 +62,17 @@ export const createNewProduct = asyncWrapper(
       //     folder: "products",
       //   });
       // }
-      // cloudinaryResponse?.secure_url
-      //     ? cloudinaryResponse.secure_url
-      //     : ""
+      // cloudinaryResponse?.secure_url ? cloudinaryResponse.secure_url : "";
 
-      const product = await createProduct(req.body);
-      // await updateFeaturedProductsCache();
-      // await setFeaturedProductsCached(JSON.stringify(product));
+      const product = await createProduct({
+        name,
+        description,
+        price,
+        image,
+        category,
+        isFeatured,
+      });
+      await updateFeaturedProductsCache();
 
       return res.status(201).json({ product });
     } catch (error) {
@@ -162,12 +166,8 @@ export const toggleFeaturedProduct = asyncWrapper(
 
 async function updateFeaturedProductsCache() {
   try {
-    // The lean() method  is used to return plain JavaScript objects instead of full Mongoose documents. This can significantly improve performance
-
-    const featuredProducts = await ProductModel.find({
-      isFeatured: true,
-    }).lean();
-    await getFeaturedProductsCached();
+    const featuredProducts = await findProductsFeatured();
+    await setFeaturedProductsCached(JSON.stringify(featuredProducts));
   } catch (error) {
     console.log("Error:", error);
   }

@@ -24,7 +24,7 @@ export const protectRoute = asyncWrapper(
         }
 
         (req as any)["user"] = user;
-
+        
         next();
       } catch (error) {
         return next(
@@ -40,6 +40,7 @@ export const protectRoute = asyncWrapper(
 export const adminRoute = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
     if ((req as any)["user"] && (req as any)["user"].role === "admin") {
+      
       next();
     } else {
       return next(new CustomError(404, "Access denied - Admin only"));

@@ -26,7 +26,12 @@ app.use("/api/auth", authRoute);
 app.use("/api/products", productRoute);
 
 app.use((err: CustomError, req: Request, res: Response, next: NextFunction) => {
-  res.status(err.statusCode).json({ message: err.message });
+  console.log("Error Middleware:", err);
+  
+  const status = err.statusCode || 500;
+   res.status(status).json({
+    message: err.message || "Internal Server Error"
+  });
   next();
 });
 

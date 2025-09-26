@@ -12,12 +12,20 @@ import { protectRoute, adminRoute } from "../middlewares/auth.middleware";
 
 const router = Router();
 
-router.get("/", protectRoute, adminRoute, getAllProducts);
+router
+  .route("/")
+  .get(protectRoute, adminRoute, getAllProducts)
+  .post(protectRoute, adminRoute, createNewProduct);
+
+router
+  .route("/:id")
+  .patch(protectRoute, adminRoute, toggleFeaturedProduct)
+  .delete(protectRoute, adminRoute, deleteProduct);
+
 router.get("/featured", getFeaturedProducts);
+
 router.get("/category/:category", getProductsByCategory);
+
 router.get("/recommendations", getRecommendedProducts);
-router.post("/", protectRoute, adminRoute, createNewProduct);
-router.patch("/:id", protectRoute, adminRoute, toggleFeaturedProduct);
-router.delete("/:id", protectRoute, adminRoute, deleteProduct);
 
 export default router;
