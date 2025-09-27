@@ -10,6 +10,7 @@ import {
   getProductsByCategory,
   getRecommendedProducts,
 } from "./productThunk";
+import type { RootState } from "../store";
 
 interface ProductState {
   products: Product[];
@@ -78,4 +79,5 @@ const productSlice = createSlice({
   },
 });
 
+export const selectProducts = (state: RootState) => state.product;
 export default productSlice.reducer;
