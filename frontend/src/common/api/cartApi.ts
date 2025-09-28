@@ -1,28 +1,34 @@
 import axios from "axios";
 
-const API_BASE = "/api/cart";
+const cartAPI = axios.create({
+  baseURL:
+    import.meta.env.MODE === "development"
+      ? "http://localhost:7000/api/cart"
+      : "/api/cart",
+  withCredentials: true,
+});
 
 export const fetchCart = async () => {
-  const res = await axios.get(API_BASE);
-  return res.data.cart;
+  const res = await cartAPI.get("/");
+  return res.data;
 };
 
 export const addToCart = async (productId: string, quantity: number = 1) => {
-  const res = await axios.post(API_BASE, { productId, quantity });
-  return res.data.cart;
+  const res = await cartAPI.post("/", { productId, quantity });
+  return res.data;
 };
 
 export const updateCartItem = async (productId: string, quantity: number) => {
-  const res = await axios.patch(`${API_BASE}/${productId}`, { quantity });
-  return res.data.cart;
+  const res = await cartAPI.patch(`/${productId}`, { quantity });
+  return res.data;
 };
 
 export const removeCartItem = async (productId: string) => {
-  const res = await axios.delete(`${API_BASE}/${productId}`);
-  return res.data.cart;
+  const res = await cartAPI.delete(`/${productId}`);
+  return res.data;
 };
 
 export const clearCart = async () => {
-  const res = await axios.delete(`${API_BASE}/clear`);
-  return res.data.cart;
+  const res = await cartAPI.delete("/");
+  return res.data;
 };

@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import Product from "../models/product.model.js";
+import Product from "../models/product.model";
 import asyncWrapper from "../middlewares/asyncWrapper";
 import { CustomError } from "../utils/customError";
 
@@ -19,10 +19,10 @@ export const getCartProducts = asyncWrapper(
         return { ...product.toJSON(), quantity: item.quantity };
       });
 
-      res.json(cartItems);
+      return res.status(200).json({ cartItems });
     } catch (error) {
       console.log("Error in getCartProducts controller", error);
-      next(new CustomError(500, "Server error"));
+      return next(new CustomError(500, "Server error"));
     }
   }
 );
@@ -43,10 +43,10 @@ export const addToCart = asyncWrapper(
       }
 
       await user.save();
-      res.json(user.cartItems);
+      return res.status(201).json({ cartItems: user.cartItems });
     } catch (error) {
       console.log("Error in addToCart controller", error);
-      next(new CustomError(500, "Server error"));
+      return next(new CustomError(500, "Server error"));
     }
   }
 );
@@ -64,10 +64,10 @@ export const removeAllFromCart = asyncWrapper(
         );
       }
       await user.save();
-      res.json(user.cartItems);
+      return res.status(200).json({ cartItems: user.cartItems });
     } catch (error) {
       console.log("Error in addToCart controller", error);
-      next(new CustomError(500, "Server error"));
+      return next(new CustomError(500, "Server error"));
     }
   }
 );
@@ -88,18 +88,18 @@ export const updateQuantity = asyncWrapper(
             (item: any) => item.id !== productId
           );
           await user.save();
-          return res.json(user.cartItems);
+          return res.status(200).json({ cartItems: user.cartItems });
         }
 
         existingItem.quantity = quantity;
         await user.save();
-        res.json(user.cartItems);
+        return res.status(200).json({ cartItems: user.cartItems });
       } else {
-        res.status(404).json({ message: "Product not found" });
+        return next(new CustomError(404, "Product not found"));
       }
     } catch (error) {
       console.log("Error in addToCart controller", error);
-      next(new CustomError(500, "Server error"));
+      return next(new CustomError(500, "Server error"));
     }
   }
 );

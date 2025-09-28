@@ -6,10 +6,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectProducts } from "../store/product/productSlice";
 import type { AppDispatch } from "../store/store";
 import { getProductsByCategory } from "../store/product/productThunk";
+import type { Product } from "../common/types/Product";
 
 const Category = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { categoryProducts } = useSelector(selectProducts);
+  const productsList = Array.isArray(categoryProducts) ? categoryProducts : [];
 
   const { category } = useParams();
 
@@ -19,7 +21,6 @@ const Category = () => {
     }
   }, [category, dispatch]);
 
-  console.log("products:", categoryProducts);
   return (
     <div className="min-h-screen">
       <div className="relative z-10 max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -38,13 +39,13 @@ const Category = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
         >
-          {categoryProducts?.length === 0 && (
+          {productsList.length === 0 && (
             <h2 className="text-3xl font-semibold text-gray-300 text-center col-span-full">
               No products found
             </h2>
           )}
 
-          {categoryProducts?.map((product) => (
+          {productsList.map((product: Product) => (
             <ProductCard key={product._id} product={product} />
           ))}
         </motion.div>

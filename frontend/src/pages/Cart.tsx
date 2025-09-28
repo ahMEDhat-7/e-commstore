@@ -5,11 +5,20 @@ import CartItem from "../components/CartItem";
 import PeopleAlsoBought from "../components/PeopleAlsoBought";
 import OrderSummary from "../components/OrderSummary";
 import GiftCouponCard from "../components/GiftCouponCard";
-import type { RootState } from "../store/store";
-import { useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "../store/store";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import { getCartThunk } from "../store/cart/cartThunk";
+import type { CartItemType } from "../store/cart/cartSlice";
 
 const Cart = () => {
+  const dispatch = useDispatch<AppDispatch>();
+
   const { items } = useSelector((state: RootState) => state.cart);
+
+  useEffect(() => {
+    dispatch(getCartThunk());
+  }, []);
 
   return (
     <div className="py-8 md:py-16">
@@ -25,7 +34,7 @@ const Cart = () => {
               <EmptyCartUI />
             ) : (
               <div className="space-y-6">
-                {items.map((item) => (
+                {items.map((item: CartItemType) => (
                   <CartItem key={item.productId} item={item} />
                 ))}
               </div>

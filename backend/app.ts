@@ -5,6 +5,8 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import authRoute from "./routes/auth.route";
 import productRoute from "./routes/product.route";
+import cartRoutes from "./routes/cart.route";
+import analyticsRoutes from "./routes/analytics.route";
 import { CustomError } from "./utils/customError";
 
 const app: Express = express();
@@ -25,13 +27,15 @@ app.use(morgan("combined"));
 // Routes
 app.use("/api/auth", authRoute);
 app.use("/api/products", productRoute);
+app.use("/api/cart", cartRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 app.use((err: CustomError, req: Request, res: Response, next: NextFunction) => {
   console.log("Error Middleware:", err);
-  
+
   const status = err.statusCode || 500;
-   res.status(status).json({
-    message: err.message || "Internal Server Error"
+  res.status(status).json({
+    message: err.message || "Internal Server Error",
   });
   next();
 });

@@ -7,31 +7,31 @@ import {
   clearCart,
 } from "../../common/api/cartApi";
 
-export const getCart = createAsyncThunk("cart/getCart", async () => {
-  return await fetchCart();
+export const getCartThunk = createAsyncThunk("cart/getCart", () => {
+  return fetchCart();
 });
 
-export const addCartItem = createAsyncThunk(
+export const addCartItemThunk = createAsyncThunk(
   "cart/addCartItem",
-  async ({ productId, quantity }: { productId: string; quantity?: number }) => {
-    return await addToCart(productId, quantity ?? 1);
+  ({ productId, quantity }: { productId: string; quantity?: number }) => {
+    return addToCart(productId, quantity ?? 1);
   }
 );
 
 export const updateCartItemThunk = createAsyncThunk(
   "cart/updateCartItem",
-  async ({ productId, quantity }: { productId: string; quantity: number }) => {
-    return await updateCartItem(productId, quantity);
+  ({ productId, quantity }: { productId: string; quantity: number }) => {
+    return updateCartItem(productId, quantity);
   }
 );
 
 export const removeCartItemThunk = createAsyncThunk(
   "cart/removeCartItem",
-  async (productId: string) => {
-    return await removeCartItem(productId);
+  (productId: string) => {
+    return removeCartItem(productId);
   }
 );
 
-export const clearCartThunk = createAsyncThunk("cart/clearCart", async () => {
-  return await clearCart();
+export const clearCartThunk = createAsyncThunk("cart/clearCart", () => {
+  return clearCart();
 });

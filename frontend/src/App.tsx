@@ -26,7 +26,6 @@ function App() {
 
   useEffect(() => {
     if (!user) return;
-    console.log(user.role);
   }, [user]);
 
   if (isLoading) return <LoadingSpinner />;
@@ -53,7 +52,7 @@ function App() {
             element={!user ? <Login /> : <Navigate to="/" />}
           />
           <Route
-            path="/secret-dashboard"
+            path="/dashboard"
             element={
               user?.role === "admin" ? <Admin /> : <Navigate to="/login" />
             }

@@ -1,23 +1,11 @@
-import toast from "react-hot-toast";
 import { ShoppingCart } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import type { AppDispatch } from "../store/store";
-import { selectAuth } from "../store/auth/authSlice";
 import type { Product } from "../common/types/Product";
-import { addCartItem } from "../store/cart/cartThunk";
+import { addCartItemThunk } from "../store/cart/cartThunk";
 
 const ProductCard = ({ product }: { product: Product }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { user } = useSelector(selectAuth);
-  const handleAddToCart = () => {
-    if (!user) {
-      toast.error("Please login to add products to cart", { id: "login" });
-      return;
-    } else {
-      // add to cart
-      dispatch(addCartItem({ productId: product._id, quantity: 1 }));
-    }
-  };
 
   return (
     <div className="flex w-full relative flex-col overflow-hidden rounded-lg border border-gray-700 shadow-lg">
@@ -44,7 +32,9 @@ const ProductCard = ({ product }: { product: Product }) => {
         <button
           className="flex items-center justify-center rounded-lg bg-emerald-600 px-5 py-2.5 text-center text-sm font-medium
 					 text-white hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-300"
-          onClick={handleAddToCart}
+          onClick={() =>
+            dispatch(addCartItemThunk({ productId: product._id, quantity: 1 }))
+          }
         >
           <ShoppingCart size={22} className="mr-2" />
           Add to cart

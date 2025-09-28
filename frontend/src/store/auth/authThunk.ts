@@ -14,9 +14,7 @@ const loginThunk = createAsyncThunk(
   "auth/login",
   async (userData: LoginType, thunkAPI) => {
     try {
-      const user = await loginAPI(userData);
-      console.log(user.data.user);
-      
+      const user = await loginAPI(userData);      
       toast.success(user.data.message);
       return user.data.user;
     } catch (err) {

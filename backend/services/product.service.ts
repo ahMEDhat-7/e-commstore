@@ -14,7 +14,7 @@ const findProductById = async (id: string) => {
   return ProductModel.findOne({ _id: id });
 };
 const findProductByCategory = async (category: string) => {
-  return ProductModel.findOne({ category });
+  return ProductModel.find({ category });
 };
 
 const findProductsFeatured = async () => {

@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
-  getCart,
-  addCartItem,
+  getCartThunk,
+  addCartItemThunk,
   updateCartItemThunk,
   removeCartItemThunk,
   clearCartThunk,
@@ -34,31 +34,37 @@ const cartSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(getCart.pending, (state) => {
+      .addCase(getCartThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(getCart.fulfilled, (state, action) => {
+      .addCase(getCartThunk.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload.items || [];
+        state.items = action.payload.cartItems;
       })
-      .addCase(getCart.rejected, (state, action) => {
+      .addCase(getCartThunk.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || "Failed to fetch cart";
+        state.error = action.error.message || "Failed to fetch products";
       })
-      .addCase(addCartItem.fulfilled, (state, action) => {
-        state.items = action.payload.items || [];
+      .addCase(addCartItemThunk.fulfilled, (state, action) => {
+        state.items.push(...action.payload.cartItems);
       })
       .addCase(updateCartItemThunk.fulfilled, (state, action) => {
-        state.items = action.payload.items || [];
+        const idx = state.items.findIndex(
+          (c) => c.productId === action.payload.cartItems._id
+        );
+        if (idx !== -1) state.items[idx] = action.payload;
       })
       .addCase(removeCartItemThunk.fulfilled, (state, action) => {
-        state.items = action.payload.items || [];
+        state.items = state.items.filter(
+          (c) => c.productId !== action.meta.arg
+        );
       })
-      .addCase(clearCartThunk.fulfilled, (state, action) => {
+      .addCase(clearCartThunk.fulfilled, (state) => {
         state.items = [];
       });
   },
 });
+
 export const selectCart = (state: RootState) => state.cart;
 export default cartSlice.reducer;
