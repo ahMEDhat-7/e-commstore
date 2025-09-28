@@ -1,4 +1,4 @@
-import express from "express";
+import { Router } from "express";
 import {
   addToCart,
   getCartProducts,
@@ -7,14 +7,11 @@ import {
 } from "../controllers/cart.controller";
 import { protectRoute } from "../middlewares/auth.middleware";
 
-const router = express.Router();
+const router = Router();
 
-router
-  .route("/")
-  .get(protectRoute, getCartProducts)
-  .post(protectRoute, addToCart)
-  .delete(protectRoute, removeAllFromCart);
-
+router.get("/", protectRoute, getCartProducts);
+router.post("/", protectRoute, addToCart);
+router.delete("/", protectRoute, removeAllFromCart);
 router.put("/:id", protectRoute, updateQuantity);
 
 export default router;

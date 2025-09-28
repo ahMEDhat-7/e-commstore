@@ -34,8 +34,8 @@ const Cart = () => {
               <EmptyCartUI />
             ) : (
               <div className="space-y-6">
-                {items.map((item: CartItemType) => (
-                  <CartItem key={item.productId} item={item} />
+                {items.map((item) => (
+                  <CartItem key={item._id} item={item} />
                 ))}
               </div>
             )}

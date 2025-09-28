@@ -9,7 +9,7 @@ import {
 import type { RootState } from "../store";
 
 export interface CartItemType {
-  productId: string;
+  _id: string;
   name: string;
   image: string;
   price: number;
@@ -50,15 +50,15 @@ const cartSlice = createSlice({
         state.items.push(...action.payload.cartItems);
       })
       .addCase(updateCartItemThunk.fulfilled, (state, action) => {
-        const idx = state.items.findIndex(
-          (c) => c.productId === action.payload.cartItems._id
-        );
-        if (idx !== -1) state.items[idx] = action.payload;
+        const updatedItem = action.payload.cartItems;
+        if (!updatedItem || !updatedItem.productId) return;
+        const idx = state.items.findIndex((c) => c._id === updatedItem._id);
+        console.log(idx, updatedItem);
+
+        if (idx !== -1) state.items[idx] = updatedItem;
       })
       .addCase(removeCartItemThunk.fulfilled, (state, action) => {
-        state.items = state.items.filter(
-          (c) => c.productId !== action.meta.arg
-        );
+        state.items = state.items.filter((c) => c._id !== action.meta.arg);
       })
       .addCase(clearCartThunk.fulfilled, (state) => {
         state.items = [];

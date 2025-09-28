@@ -19,12 +19,12 @@ export const addToCart = async (productId: string, quantity: number = 1) => {
 };
 
 export const updateCartItem = async (productId: string, quantity: number) => {
-  const res = await cartAPI.patch(`/${productId}`, { quantity });
+  const res = await cartAPI.put(`/${productId}`, { quantity });
   return res.data;
 };
 
 export const removeCartItem = async (productId: string) => {
-  const res = await cartAPI.delete(`/${productId}`);
+  const res = await cartAPI.delete(`/`, { data: { productId } });
   return res.data;
 };
 
