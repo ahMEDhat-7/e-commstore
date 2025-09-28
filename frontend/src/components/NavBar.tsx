@@ -2,7 +2,7 @@ import { ShoppingCart, UserPlus, LogIn, LogOut, Lock } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { selectAuth } from "../store/auth/authSlice";
-import type { AppDispatch } from "../store/store";
+import type { AppDispatch, RootState } from "../store/store";
 import { logoutThunk } from "../store/auth/authThunk";
 
 const NavBar = () => {
@@ -10,7 +10,7 @@ const NavBar = () => {
   const { user } = useSelector(selectAuth);
   const dispatch = useDispatch<AppDispatch>();
   const isAdmin = user?.role === "admin";
-  const cart = user?.cartItems || [];
+  const { items } = useSelector((state: RootState) => state.cart);
 
   const handleLogout = () => {
     dispatch(logoutThunk());
@@ -45,12 +45,12 @@ const NavBar = () => {
                   className="inline-block mr-3 group-hover:text-emerald-400"
                   size={20}
                 />
-                {cart.length > 0 && (
+                {items.length > 0 && (
                   <span
                     className="absolute -top-3 left-2 bg-emerald-500 text-white rounded-full px-2 py-0.5 
 									text-xs group-hover:bg-emerald-400 transition duration-300 ease-in-out"
                   >
-                    {cart.length}
+                    {items.length}
                   </span>
                 )}
               </Link>

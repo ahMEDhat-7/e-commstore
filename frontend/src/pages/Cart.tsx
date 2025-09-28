@@ -9,7 +9,6 @@ import type { AppDispatch, RootState } from "../store/store";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { getCartThunk } from "../store/cart/cartThunk";
-import type { CartItemType } from "../store/cart/cartSlice";
 
 const Cart = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -23,7 +22,7 @@ const Cart = () => {
   return (
     <div className="py-8 md:py-16">
       <div className="mx-auto max-w-screen-xl px-4 2xl:px-0">
-        <div className="mt-6 sm:mt-8 md:gap-6 lg:flex lg:items-start xl:gap-8">
+        <div className="mt-6 sm:mt-8 md:gap-6 lg:flex lg:items-start xl:gap -8">
           <motion.div
             className="mx-auto w-full flex-none lg:max-w-2xl xl:max-w-4xl"
             initial={{ opacity: 0, x: -20 }}

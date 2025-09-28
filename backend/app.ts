@@ -7,6 +7,7 @@ import authRoute from "./routes/auth.route";
 import productRoute from "./routes/product.route";
 import cartRoutes from "./routes/cart.route";
 import analyticsRoutes from "./routes/analytics.route";
+import couponRoutes from "./routes/coupon.route";
 import { CustomError } from "./utils/customError";
 
 const app: Express = express();
@@ -28,6 +29,7 @@ app.use(morgan("combined"));
 app.use("/api/auth", authRoute);
 app.use("/api/products", productRoute);
 app.use("/api/cart", cartRoutes);
+app.use("/api/coupon", couponRoutes);
 app.use("/api/analytics", analyticsRoutes);
 
 app.use((err: CustomError, req: Request, res: Response, next: NextFunction) => {
