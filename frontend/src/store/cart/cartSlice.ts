@@ -70,7 +70,7 @@ const cartSlice = createSlice({
       if (state.coupon && state.isCouponApplied) {
         state.total = Math.max(
           0,
-          state.subtotal - (state.subtotal * state.coupon.discountPercentage) / 100
+            state.subtotal - (state.subtotal * state.coupon.discountPercentage) / 100
         );
       } else {
         state.total = state.subtotal;

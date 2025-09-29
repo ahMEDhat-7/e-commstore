@@ -2,9 +2,10 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { MoveRight } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
-import { useSelector } from "react-redux";
-import type { RootState } from "../store/store";
+import { useDispatch, useSelector } from "react-redux";
+import type { RootState, AppDispatch } from "../store/store";
 import axios from "axios";
+import { calculateTotals } from "../store/cart/cartSlice";
 
 const stripePromise = loadStripe(
   "pk_test_51SCod6QlyX6I17P3Mkodeo4tHzRY6CBDs9eypPvb5W2t7KZmALoAu4WMiinodNVkgkLge3RjtgecF5Cb8EIY6t0F002bvCajcn"
@@ -14,8 +15,8 @@ const OrderSummary = () => {
   const { total, subtotal, items, coupon, isCouponApplied } = useSelector(
     (state: RootState) => state.cart
   );
-  const {} = useSelector((state: RootState) => state.cart);
-
+  const dispatch = useDispatch<AppDispatch>();
+  dispatch(calculateTotals());
   const savings = subtotal - total;
   const formattedSubtotal = subtotal.toFixed(2);
   const formattedTotal = total.toFixed(2);
