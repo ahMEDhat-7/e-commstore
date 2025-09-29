@@ -8,6 +8,7 @@ import productRoute from "./routes/product.route";
 import cartRoutes from "./routes/cart.route";
 import analyticsRoutes from "./routes/analytics.route";
 import couponRoutes from "./routes/coupon.route";
+import paymentsRoutes from "./routes/payment.route";
 import { CustomError } from "./utils/customError";
 
 const app: Express = express();
@@ -31,6 +32,7 @@ app.use("/api/products", productRoute);
 app.use("/api/cart", cartRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/payments", paymentsRoutes);
 
 app.use((err: CustomError, req: Request, res: Response, next: NextFunction) => {
   console.log("Error Middleware:", err);

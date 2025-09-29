@@ -5,6 +5,7 @@ import Confetti from "react-confetti";
 import type { AppDispatch } from "../store/store";
 import { useDispatch } from "react-redux";
 import { clearCartThunk } from "../store/cart/cartThunk";
+import axios from "axios";
 
 const PurchaseSuccess = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -15,9 +16,9 @@ const PurchaseSuccess = () => {
   useEffect(() => {
     const handleCheckoutSuccess = async (sessionId: string) => {
       try {
-        // await axios.post("/payments/checkout-success", {
-        //   sessionId,
-        // });
+        await axios.post("/payments/checkout-success", {
+          sessionId,
+        });
         dispatch(clearCartThunk());
       } catch (error) {
         console.log(error);

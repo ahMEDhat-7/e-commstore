@@ -1,15 +1,15 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { applyCouponThunk } from "../store/coupon/couponThunk";
 import type { AppDispatch, RootState } from "../store/store";
-import { removeCoupon } from "../store/coupon/couponSlice";
+import { applyCouponThunk } from "../store/cart/cartThunk";
+import { removeCoupon } from "../store/cart/cartSlice";
 
 const GiftCouponCard = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [userInputCode, setUserInputCode] = useState("");
   const { coupon, isCouponApplied } = useSelector(
-    (state: RootState) => state.coupon
+    (state: RootState) => state.cart
   );
 
   useEffect(() => {

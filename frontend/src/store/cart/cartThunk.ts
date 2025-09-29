@@ -6,6 +6,7 @@ import {
   removeCartItem,
   clearCart,
 } from "../../common/api/cartApi";
+import { fetchMyCoupon, validateCoupon } from "../../common/api/couponApi";
 
 export const getCartThunk = createAsyncThunk("cart/getCart", () => {
   return fetchCart();
@@ -35,3 +36,20 @@ export const removeCartItemThunk = createAsyncThunk(
 export const clearCartThunk = createAsyncThunk("cart/clearCart", () => {
   return clearCart();
 });
+
+// Coupon thunks
+export const getMyCouponThunk = createAsyncThunk(
+  "cart/getMyCoupon",
+  async () => {
+    const response = await fetchMyCoupon();
+    return response;
+  }
+);
+
+export const applyCouponThunk = createAsyncThunk(
+  "cart/applyCoupon",
+  async (code: string) => {
+    const response = await validateCoupon(code);
+    return response;
+  }
+);
