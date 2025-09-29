@@ -1,20 +1,21 @@
 import axios from "axios";
-import type { CouponType } from "../../store/coupon/couponSlice";
 
 const couponAPI = axios.create({
   baseURL:
     import.meta.env.MODE === "development"
-      ? "http://localhost:7000/api/coupon"
+      ? "http://localhost:7000/api/coupons"
       : "/api/coupon",
   withCredentials: true,
 });
 
-export const fetchMyCoupon = async (): Promise<CouponType> => {
+export const fetchMyCoupon = async () => {
   const response = await couponAPI.get("");
   return response.data;
 };
 
-export const validateCoupon = async (code: string): Promise<CouponType> => {
+export const validateCoupon = async (code: string) => {
   const response = await couponAPI.post("/validate", { code });
+  console.log(response.data);
+
   return response.data;
 };

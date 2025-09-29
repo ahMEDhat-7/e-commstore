@@ -29,7 +29,7 @@ app.use(morgan("combined"));
 app.use("/api/auth", authRoute);
 app.use("/api/products", productRoute);
 app.use("/api/cart", cartRoutes);
-app.use("/api/coupon", couponRoutes);
+app.use("/api/coupons", couponRoutes);
 app.use("/api/analytics", analyticsRoutes);
 
 app.use((err: CustomError, req: Request, res: Response, next: NextFunction) => {

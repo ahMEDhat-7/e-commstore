@@ -9,7 +9,7 @@ export const getCoupon = asyncWrapper(async (req, res, next) => {
       userId: user._id,
       isActive: true,
     });
-    res.json(coupon || null);
+    return res.status(200).json({ coupon });
   } catch (error) {
     return next(new CustomError(500, "Server error"));
   }
@@ -26,16 +26,16 @@ export const validateCoupon = asyncWrapper(async (req, res, next) => {
     });
 
     if (!coupon) {
-      return res.status(404).json({ message: "Coupon not found" });
+      return res.status(404).json({ message: "Coupon not found", coupon });
     }
 
     if (coupon.expirationDate < new Date()) {
       coupon.isActive = false;
       await coupon.save();
-      return res.status(404).json({ message: "Coupon expired" });
+      return res.status(404).json({ message: "Coupon expired", coupon });
     }
 
-    res.json({
+    return res.status(200).json({
       message: "Coupon is valid",
       code: coupon.code,
       discountPercentage: coupon.discountPercentage,
