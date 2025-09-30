@@ -6,49 +6,73 @@ import {
   removeCartItemThunk,
   updateCartItemThunk,
 } from "../store/cart/cartThunk";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 const CartItem = ({ item }: { item: CartItemType }) => {
   const dispatch = useDispatch<AppDispatch>();
   const [quantityItem, setQuantityItem] = useState<number>(item.quantity);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleQuantityUpdate = useCallback(
+    async (newQuantity: number) => {
+      if (isUpdating || newQuantity === quantityItem) return;
+      setIsUpdating(true);
+      try {
+        await dispatch(
+          updateCartItemThunk({
+            productId: item._id,
+            quantity: newQuantity,
+          })
+        ).unwrap();
+        setQuantityItem(newQuantity);
+      } catch (error) {
+        // Revert to previous quantity if update fails
+        setQuantityItem(item.quantity);
+      } finally {
+        setIsUpdating(false);
+      }
+    },
+    [dispatch, item._id, item.quantity, quantityItem, isUpdating]
+  );
+
+  const handleRemoveItem = useCallback(async () => {
+    if (isUpdating) return;
+    setIsUpdating(true);
+    try {
+      await dispatch(removeCartItemThunk(item._id)).unwrap();
+    } finally {
+      setIsUpdating(false);
+    }
+  }, [dispatch, item._id, isUpdating]);
+
   return (
     <div className="rounded-lg border p-4 shadow-sm border-gray-700 bg-gray-800 md:p-6">
       <div className="space-y-4 md:flex md:items-center md:justify-between md:gap-6 md:space-y-0">
         <div className="shrink-0 md:order-1">
-          <img className="h-20 md:h-32 rounded object-cover" src={item.image} />
+          <img
+            className="h-20 md:h-32 rounded object-cover"
+            src={item.image}
+            alt={item.name}
+          />
         </div>
         <label className="sr-only">Choose quantity:</label>
 
         <div className="flex items-center justify-between md:order-3 md:justify-end">
           <div className="flex items-center gap-2">
             <button
-              className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-600 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              onClick={() => {
-                if (item.quantity > 1) {
-                  setQuantityItem((prev) => prev - 1);
-                  dispatch(
-                    updateCartItemThunk({
-                      productId: item._id,
-                      quantity: quantityItem,
-                    })
-                  );
-                }
-              }}
+              className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-600 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50"
+              onClick={() =>
+                quantityItem > 1 && handleQuantityUpdate(quantityItem - 1)
+              }
+              disabled={isUpdating || quantityItem <= 1}
             >
               <Minus className="text-gray-300" />
             </button>
             <p>{quantityItem}</p>
             <button
-              className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-600 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              onClick={() => {
-                setQuantityItem((prev) => prev + 1);
-                dispatch(
-                  updateCartItemThunk({
-                    productId: item._id,
-                    quantity: quantityItem,
-                  })
-                );
-              }}
+              className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-600 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50"
+              onClick={() => handleQuantityUpdate(quantityItem + 1)}
+              disabled={isUpdating}
             >
               <Plus className="text-gray-300" />
             </button>
@@ -57,6 +81,9 @@ const CartItem = ({ item }: { item: CartItemType }) => {
           <div className="text-end md:order-4 md:w-32">
             <p className="text-base font-bold text-emerald-400">
               ${item.price}
+            </p>
+            <p className="text-sm text-gray-400">
+              Total: ${(item.price * quantityItem).toFixed(2)}
             </p>
           </div>
         </div>
@@ -68,8 +95,9 @@ const CartItem = ({ item }: { item: CartItemType }) => {
           <div className="flex items-center gap-4">
             <button
               className="inline-flex items-center text-sm font-medium text-red-400
-							 hover:text-red-300 hover:underline"
-              onClick={() => dispatch(removeCartItemThunk(item._id))}
+							 hover:text-red-300 hover:underline disabled:opacity-50"
+              onClick={handleRemoveItem}
+              disabled={isUpdating}
             >
               <Trash />
             </button>

@@ -1,4 +1,3 @@
-
 import { createSlice } from "@reduxjs/toolkit";
 import {
   getCartThunk,
@@ -10,7 +9,6 @@ import {
   applyCouponThunk,
 } from "./cartThunk";
 import type { RootState } from "../store";
-
 
 export interface CartItemType {
   _id: string;
@@ -25,7 +23,6 @@ export interface CouponType {
   discountPercentage: number;
 }
 
-
 interface CartState {
   items: CartItemType[];
   loading: boolean;
@@ -36,8 +33,8 @@ interface CartState {
   couponError: string | null;
   subtotal: number;
   total: number;
+  lastUpdated: number;
 }
-
 
 const initialState: CartState = {
   items: [],
@@ -49,8 +46,8 @@ const initialState: CartState = {
   couponError: null,
   subtotal: 0,
   total: 0,
+  lastUpdated: 0,
 };
-
 
 const cartSlice = createSlice({
   name: "cart",
@@ -70,7 +67,8 @@ const cartSlice = createSlice({
       if (state.coupon && state.isCouponApplied) {
         state.total = Math.max(
           0,
-            state.subtotal - (state.subtotal * state.coupon.discountPercentage) / 100
+          state.subtotal -
+            (state.subtotal * state.coupon.discountPercentage) / 100
         );
       } else {
         state.total = state.subtotal;
@@ -86,25 +84,73 @@ const cartSlice = createSlice({
       .addCase(getCartThunk.fulfilled, (state, action) => {
         state.loading = false;
         state.items = action.payload.cartItems;
+        state.subtotal = action.payload.subtotal;
+        state.total = action.payload.total;
+        state.lastUpdated = Date.now();
       })
       .addCase(getCartThunk.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || "Failed to fetch products";
+        state.error = action.error.message || "Failed to fetch cart items";
+      })
+      .addCase(addCartItemThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
       .addCase(addCartItemThunk.fulfilled, (state, action) => {
-        state.items.push(...action.payload.cartItems);
+        state.loading = false;
+        state.items = action.payload.cartItems;
+        state.subtotal = action.payload.subtotal;
+        state.total = action.payload.total;
+        state.lastUpdated = Date.now();
+      })
+      .addCase(addCartItemThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to add item to cart";
+      })
+      .addCase(updateCartItemThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
       .addCase(updateCartItemThunk.fulfilled, (state, action) => {
-        const updatedItem = action.payload.cartItems;
-        if (!updatedItem || !updatedItem.productId) return;
-        const idx = state.items.findIndex((c) => c._id === updatedItem._id);
-        if (idx !== -1) state.items[idx] = updatedItem;
+        state.loading = false;
+        state.items = action.payload.cartItems;
+        state.subtotal = action.payload.subtotal;
+        state.total = action.payload.total;
+        state.lastUpdated = Date.now();
+      })
+      .addCase(updateCartItemThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to update cart item";
+      })
+      .addCase(removeCartItemThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
       .addCase(removeCartItemThunk.fulfilled, (state, action) => {
-        state.items = state.items.filter((c) => c._id !== action.meta.arg);
+        state.loading = false;
+        state.items = action.payload.cartItems;
+        state.subtotal = action.payload.subtotal;
+        state.total = action.payload.total;
+        state.lastUpdated = Date.now();
+      })
+      .addCase(removeCartItemThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to remove item from cart";
+      })
+      .addCase(clearCartThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
       .addCase(clearCartThunk.fulfilled, (state) => {
+        state.loading = false;
         state.items = [];
+        state.subtotal = 0;
+        state.total = 0;
+        state.lastUpdated = Date.now();
+      })
+      .addCase(clearCartThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to clear cart";
       })
       // Coupon thunks
       .addCase(getMyCouponThunk.pending, (state) => {
@@ -134,7 +180,6 @@ const cartSlice = createSlice({
       });
   },
 });
-
 
 export const { removeCoupon, calculateTotals } = cartSlice.actions;
 export const selectCart = (state: RootState) => state.cart;

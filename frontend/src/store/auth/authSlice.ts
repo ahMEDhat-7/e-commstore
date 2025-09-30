@@ -1,7 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
 import type { AuthState } from "../../common/types";
-import { loginThunk, logoutThunk, signupThunk } from "./authThunk";
+import {
+  loginThunk,
+  logoutThunk,
+  signupThunk,
+  profileThunk,
+} from "./authThunk";
 
 const initialState: AuthState = {
   user: null,
@@ -43,6 +48,9 @@ export const authSlice = createSlice({
       })
       .addCase(logoutThunk.rejected, (state) => {
         state.isLoading = false;
+      })
+      .addCase(profileThunk.fulfilled, (state, action) => {
+        state.user = action.payload;
       });
   },
 });

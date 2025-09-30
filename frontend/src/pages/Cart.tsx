@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ShoppingCart } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Loader2, ShoppingCart } from "lucide-react";
 import CartItem from "../components/CartItem";
 import PeopleAlsoBought from "../components/PeopleAlsoBought";
 import OrderSummary from "../components/OrderSummary";
@@ -12,46 +12,77 @@ import { getCartThunk } from "../store/cart/cartThunk";
 
 const Cart = () => {
   const dispatch = useDispatch<AppDispatch>();
-
-  const { items } = useSelector((state: RootState) => state.cart);
+  const { items, loading, error } = useSelector(
+    (state: RootState) => state.cart
+  );
 
   useEffect(() => {
     dispatch(getCartThunk());
-  }, []);
+  }, [dispatch]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <p className="text-red-500">Failed to load cart: {error}</p>
+        <button
+          onClick={() => dispatch(getCartThunk())}
+          className="mt-4 px-4 py-2 bg-emerald-500 rounded-md text-white hover:bg-emerald-600 transition-colors"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="py-8 md:py-16">
       <div className="mx-auto max-w-screen-xl px-4 2xl:px-0">
-        <div className="mt-6 sm:mt-8 md:gap-6 lg:flex lg:items-start xl:gap -8">
-          <motion.div
-            className="mx-auto w-full flex-none lg:max-w-2xl xl:max-w-4xl"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            {items.length === 0 ? (
-              <EmptyCartUI />
-            ) : (
-              <div className="space-y-6">
-                {items.map((item) => (
-                  <CartItem key={item._id} item={item} />
-                ))}
-              </div>
-            )}
-            {items.length > 0 && <PeopleAlsoBought />}
-          </motion.div>
-
-          {items.length > 0 && (
+        <div className="mt-6 sm:mt-8 md:gap-6 lg:flex lg:items-start xl:gap-8">
+          <AnimatePresence mode="wait">
             <motion.div
-              className="mx-auto mt-6 max-w-4xl flex-1 space-y-6 lg:mt-0 lg:w-full"
-              initial={{ opacity: 0, x: 20 }}
+              key="cart-items"
+              className="mx-auto w-full flex-none lg:max-w-2xl xl:max-w-4xl"
+              initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.5 }}
             >
-              <OrderSummary />
-              <GiftCouponCard />
+              {items.length === 0 ? (
+                <EmptyCartUI />
+              ) : (
+                <div className="space-y-6">
+                  {items.map((item) => (
+                    <CartItem key={item._id} item={item} />
+                  ))}
+                </div>
+              )}
+              {items.length > 0 && <PeopleAlsoBought />}
             </motion.div>
-          )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {items.length > 0 && (
+              <motion.div
+                key="cart-summary"
+                className="mx-auto mt-6 max-w-4xl flex-1 space-y-6 lg:mt-0 lg:w-full"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.5 }}
+              >
+                <OrderSummary />
+                <GiftCouponCard />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>

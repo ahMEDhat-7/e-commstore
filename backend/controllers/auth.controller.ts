@@ -73,7 +73,6 @@ const login = asyncWrapper(
             username: user.username,
             email: user.email,
             role: user.role,
-            cartItems: user.cartItems,
           },
           message: "you logged in successfully",
         });

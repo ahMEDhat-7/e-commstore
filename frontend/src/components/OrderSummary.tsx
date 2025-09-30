@@ -1,8 +1,9 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { MoveRight } from "lucide-react";
+import { Loader2, MoveRight } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
 import { useDispatch, useSelector } from "react-redux";
+import { useState, useEffect } from "react";
 import type { RootState, AppDispatch } from "../store/store";
 import axios from "axios";
 import { calculateTotals } from "../store/cart/cartSlice";
@@ -12,30 +13,46 @@ const stripePromise = loadStripe(
 );
 
 const OrderSummary = () => {
-  const { total, subtotal, items, coupon, isCouponApplied } = useSelector(
-    (state: RootState) => state.cart
-  );
+  const { total, subtotal, items, coupon, isCouponApplied, loading } =
+    useSelector((state: RootState) => state.cart);
   const dispatch = useDispatch<AppDispatch>();
-  dispatch(calculateTotals());
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    dispatch(calculateTotals());
+  }, [items, coupon, isCouponApplied, dispatch]);
+
   const savings = subtotal - total;
   const formattedSubtotal = subtotal.toFixed(2);
   const formattedTotal = total.toFixed(2);
   const formattedSavings = savings.toFixed(2);
 
   const handlePayment = async () => {
-    const stripe = await stripePromise;
-    const res = await axios.post("/payments/create-checkout-session", {
-      products: items,
-      couponCode: coupon ? coupon.code : null,
-    });
+    setError(null);
+    setIsProcessing(true);
+    try {
+      const stripe = await stripePromise;
+      const res = await axios.post("/payments/create-checkout-session", {
+        products: items,
+        couponCode: coupon ? coupon.code : null,
+      });
 
-    const session = res.data;
-    const result = await stripe?.redirectToCheckout({
-      sessionId: session.id,
-    });
+      const session = res.data;
+      const result = await stripe?.redirectToCheckout({
+        sessionId: session.id,
+      });
 
-    if (result?.error) {
-      console.error("Error:", result.error);
+      if (result?.error) {
+        throw new Error(result.error.message || "Payment failed");
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Payment processing failed"
+      );
+      console.error("Payment error:", err);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -86,13 +103,29 @@ const OrderSummary = () => {
           </dl>
         </div>
 
+        {error && (
+          <div className="text-sm text-red-400 text-center">{error}</div>
+        )}
+
         <motion.button
-          className="flex w-full items-center justify-center rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-300"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          className={`flex w-full items-center justify-center rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-medium
+            text-white hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-300 disabled:opacity-50
+            disabled:cursor-not-allowed transition-colors ${
+              loading || isProcessing ? "cursor-not-allowed" : ""
+            }`}
+          whileHover={{ scale: loading || isProcessing ? 1 : 1.05 }}
+          whileTap={{ scale: loading || isProcessing ? 1 : 0.95 }}
           onClick={handlePayment}
+          disabled={loading || isProcessing || items.length === 0}
         >
-          Proceed to Checkout
+          {isProcessing ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Processing...
+            </>
+          ) : (
+            "Proceed to Checkout"
+          )}
         </motion.button>
 
         <div className="flex items-center justify-center gap-2">

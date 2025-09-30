@@ -19,18 +19,6 @@ const UserSchema = new mongoose.Schema(
       required: [true, "value is missed"],
       minlength: [6, "password must be at least 6 characters long"],
     },
-    cartItems: [
-      {
-        quantity: {
-          type: Number,
-          default: 1,
-        },
-        product: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Product",
-        },
-      },
-    ],
     role: {
       type: String,
       enum: ["customer", "admin"],

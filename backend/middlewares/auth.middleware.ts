@@ -24,7 +24,6 @@ export const protectRoute = asyncWrapper(
         }
 
         (req as any)["user"] = user;
-        console.log("server ", user);
 
         next();
       } catch (error) {

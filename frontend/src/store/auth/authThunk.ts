@@ -14,7 +14,7 @@ const loginThunk = createAsyncThunk(
   "auth/login",
   async (userData: LoginType, thunkAPI) => {
     try {
-      const user = await loginAPI(userData);      
+      const user = await loginAPI(userData);
       toast.success(user.data.message);
       return user.data.user;
     } catch (err) {
@@ -58,8 +58,8 @@ const logoutThunk = createAsyncThunk("auth/logout", async () => {
 
 const profileThunk = createAsyncThunk("auth/profile", async () => {
   try {
-    const user = await profileAPI();
-    return user;
+    const response = await profileAPI();
+    return response.data;
   } catch (err) {}
 });
 
