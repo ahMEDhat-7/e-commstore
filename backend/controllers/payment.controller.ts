@@ -21,10 +21,9 @@ export const createCheckoutSession = asyncWrapper(
       const lineItems = products.map((product) => {
         const amount = Math.round(product.price * 100);
         totalAmount += amount * product.quantity;
-
         return {
           price_data: {
-            currency: "usd",
+            currency: "EGP",
             product_data: {
               name: product.name,
               images: [product.image],
@@ -131,7 +130,7 @@ export const checkoutSuccess = asyncWrapper(
         });
       }
     } catch (error) {
-      return next(new CustomError(500, "Server error"));
+      return next(new CustomError(500, `Server error:${error}`));
     }
   }
 );
