@@ -10,36 +10,32 @@ import { useCallback, useState } from "react";
 
 const CartItem = ({ item }: { item: CartItemType }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const [quantityItem, setQuantityItem] = useState<number>(item.quantity);
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleQuantityUpdate = useCallback(
     async (newQuantity: number) => {
-      if (isUpdating || newQuantity === quantityItem) return;
+      if (isUpdating || newQuantity === item.quantity) return;
       setIsUpdating(true);
       try {
-        dispatch(
-          updateCartItemThunk({
-            productId: item._id,
-            quantity: newQuantity,
-          })
-        );
-        setQuantityItem(newQuantity);
+        await dispatch(
+          updateCartItemThunk({ productId: item._id, quantity: newQuantity })
+        ).unwrap();
       } catch (error) {
-        // Revert to previous quantity if update fails
-        setQuantityItem(item.quantity);
+        console.error("Failed to update item:", error);
       } finally {
         setIsUpdating(false);
       }
     },
-    [dispatch, item._id, item.quantity, quantityItem, isUpdating]
+    [dispatch, item._id, item.quantity, isUpdating]
   );
 
   const handleRemoveItem = useCallback(async () => {
     if (isUpdating) return;
     setIsUpdating(true);
     try {
-      dispatch(removeCartItemThunk(item._id));
+      await dispatch(removeCartItemThunk(item._id)).unwrap();
+    } catch (error) {
+      console.error("Failed to remove item:", error);
     } finally {
       setIsUpdating(false);
     }
@@ -55,24 +51,23 @@ const CartItem = ({ item }: { item: CartItemType }) => {
             alt={item.name}
           />
         </div>
-        <label className="sr-only">Choose quantity:</label>
 
         <div className="flex items-center justify-between md:order-3 md:justify-end">
           <div className="flex items-center gap-2">
             <button
-              className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-600 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50"
               onClick={() =>
-                quantityItem > 1 && handleQuantityUpdate(quantityItem - 1)
+                item.quantity > 1 && handleQuantityUpdate(item.quantity - 1)
               }
-              disabled={isUpdating || quantityItem <= 1}
+              disabled={isUpdating || item.quantity <= 1}
+              className="inline-flex h-5 w-5 items-center justify-center rounded-md border border-gray-600 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50"
             >
               <Minus className="text-gray-300" />
             </button>
-            <p>{quantityItem}</p>
+            <p>{item.quantity}</p>
             <button
-              className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-gray-600 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50"
-              onClick={() => handleQuantityUpdate(quantityItem + 1)}
+              onClick={() => handleQuantityUpdate(item.quantity + 1)}
               disabled={isUpdating}
+              className="inline-flex h-5 w-5 items-center justify-center rounded-md border border-gray-600 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50"
             >
               <Plus className="text-gray-300" />
             </button>
@@ -83,7 +78,7 @@ const CartItem = ({ item }: { item: CartItemType }) => {
               ${item.price}
             </p>
             <p className="text-sm text-gray-400">
-              Total: ${(item.price * quantityItem).toFixed(2)}
+              Total: ${(Number(item.price) * item.quantity).toFixed(2)}
             </p>
           </div>
         </div>
@@ -92,19 +87,17 @@ const CartItem = ({ item }: { item: CartItemType }) => {
           <p className="text-base font-medium text-white hover:text-emerald-400 hover:underline">
             {item.name}
           </p>
-          <div className="flex items-center gap-4">
-            <button
-              className="inline-flex items-center text-sm font-medium text-red-400
-							 hover:text-red-300 hover:underline disabled:opacity-50"
-              onClick={handleRemoveItem}
-              disabled={isUpdating}
-            >
-              <Trash />
-            </button>
-          </div>
+          <button
+            onClick={handleRemoveItem}
+            disabled={isUpdating}
+            className="inline-flex items-center text-sm font-medium text-red-400 hover:text-red-300 hover:underline disabled:opacity-50"
+          >
+            <Trash />
+          </button>
         </div>
       </div>
     </div>
   );
 };
+
 export default CartItem;
