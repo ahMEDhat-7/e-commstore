@@ -6,10 +6,7 @@ import type { LoginType, SignupType } from "../types";
 // we need to fix that
 
 const authAPI = axios.create({
-  baseURL:
-    import.meta.env.MODE === "development"
-      ? "http://localhost:7000/api/auth"
-      : "/api/auth",
+  baseURL: import.meta.env.VITE_BASE_URL + "/auth",
   withCredentials: true,
 });
 

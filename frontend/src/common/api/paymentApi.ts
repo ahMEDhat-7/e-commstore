@@ -2,10 +2,8 @@ import axios from "axios";
 import type { CartItemType } from "../../store/cart/cartSlice";
 
 const paymentAPI = axios.create({
-  baseURL:
-    import.meta.env.MODE === "development"
-      ? "http://localhost:7000/api/payments"
-      : "/api/auth",
+  baseURL:import.meta.env.VITE_BASE_URL+"/payments",
+      
   withCredentials: true,
 });
 

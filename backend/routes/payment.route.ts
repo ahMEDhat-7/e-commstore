@@ -7,7 +7,7 @@ import {
 
 const router = Router();
 
-router.post("/create-checkout-session", protectRoute, createCheckoutSession);
-router.post("/checkout-success", protectRoute, checkoutSuccess);
+router.post("/create-checkout-session", createCheckoutSession);
+router.post("/checkout-success", checkoutSuccess);
 
 export default router;

@@ -1,10 +1,7 @@
 import axios from "axios";
 
 const couponAPI = axios.create({
-  baseURL:
-    import.meta.env.MODE === "development"
-      ? "http://localhost:7000/api/coupons"
-      : "/api/coupon",
+  baseURL: import.meta.env.VITE_BASE_URL + "/coupons",
   withCredentials: true,
 });
 

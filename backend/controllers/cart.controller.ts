@@ -38,7 +38,6 @@ export const getCartProducts = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = (req as any).user._id;
-
       const cart = await Cart.findOne({ userId }).populate<{
         items: PopulatedCartItem[];
       }>("items.productId", "_id name price image");
@@ -181,70 +180,29 @@ export const removeFromCart = asyncWrapper(
 export const updateQuantity = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = (req as any).user._id;
-      const { productId } = req.params;
+      const { id } = req.params;
       const { quantity } = req.body;
 
-      if (quantity < 0) {
-        return next(new CustomError(400, "Quantity cannot be negative"));
-      }
-
-      let cart;
-
-      if (quantity === 0) {
-        
-        // Remove item from cart
-        cart = await Cart.findOneAndUpdate(
-          { userId },
-          { $pull: { items: { productId } } },
-          { new: true }
-        );
-      } else {
-        // Update item quantity
-        const existingCart = await Cart.findOne({ userId });
-console.log("Existing cart:", JSON.stringify(existingCart, null, 2));
-        cart = await Cart.findOneAndUpdate(
-          {
-            userId,
-            "items.productId": productId,
+      const userId = (req as any).user._id;
+      const updated = await Cart.findOneAndUpdate(
+        {
+          userId: userId,
+          "items.productId": id,
+        },
+        {
+          $set: {
+            "items.$.quantity": quantity,
           },
-          {
-            $set: { "items.$.quantity": quantity },
-          },
-          { new: true }
-        );
-      }
+        },
+        {
+          new: true, // Return updated document
+          runValidators: true,
+        }
+      );
 
-      if (!cart) {
-        return next(
-          new CustomError(
-            404,
-            quantity === 0 ? "Cart not found" : "Product not found in cart"
-          )
-        );
-      }
-
-      // Optionally recalculate totals here if not handled in model
-      // await cart.recalculateTotals?.();
-
-      const populatedCart = await Cart.findById(cart._id).populate<{
-        items: PopulatedCartItem[];
-      }>("items.productId", "_id name price image");
-
-      if (!populatedCart) {
-        return next(new CustomError(404, "Cart not found"));
-      }
-
-      const cartItems = mapCartItemsToResponse(populatedCart.items);
-
-      return res.status(200).json({
-        cartItems,
-        subtotal: populatedCart.subtotal,
-        total: populatedCart.total,
-      });
+      return res.status(200).json({ updated });
     } catch (error) {
-      console.error("Error in updateQuantity controller:", error);
-      return next(new CustomError(500, "Server error"));
+      return next(new CustomError(500, "Server error" + error));
     }
   }
 );

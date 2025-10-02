@@ -1,17 +1,17 @@
 import { Router } from "express";
 import {
-  addToCart,
   getCartProducts,
+  addToCart,
   removeFromCart,
   updateQuantity,
 } from "../controllers/cart.controller";
-import { protectRoute } from "../middlewares/auth.middleware";
 
 const router = Router();
 
-router.get("/", protectRoute, getCartProducts);
-router.post("/", protectRoute, addToCart);
-router.delete("/", protectRoute, removeFromCart);
-router.put("/:productId", protectRoute, updateQuantity);
+// `/api/carts`
+router.route("/").get(getCartProducts).post(addToCart).delete(removeFromCart);
+
+// `/api/carts/:id`
+router.patch("/:id", updateQuantity);
 
 export default router;

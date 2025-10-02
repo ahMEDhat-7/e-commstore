@@ -2,10 +2,8 @@ import axios from "axios";
 import type { Product } from "../types/Product";
 
 const productAPI = axios.create({
-  baseURL:
-    import.meta.env.MODE === "development"
-      ? "http://localhost:7000/api/products"
-      : "/api/auth",
+  baseURL: import.meta.env.VITE_BASE_URL + "/products",
+
   withCredentials: true,
 });
 
@@ -25,7 +23,7 @@ export const createProduct = async (product: Omit<Product, "_id">) => {
 };
 
 export const updateProduct = async (id: string) => {
-  const res = await productAPI.patch(`/${id}`);  
+  const res = await productAPI.patch(`/${id}`);
   return res.data.updatedProduct;
 };
 
