@@ -190,15 +190,19 @@ export const updateQuantity = asyncWrapper(
       }
 
       let cart;
+
       if (quantity === 0) {
-        // Remove item if quantity is 0
+        
+        // Remove item from cart
         cart = await Cart.findOneAndUpdate(
           { userId },
           { $pull: { items: { productId } } },
           { new: true }
         );
       } else {
-        // Update quantity if item exists, return null if item doesn't exist
+        // Update item quantity
+        const existingCart = await Cart.findOne({ userId });
+console.log("Existing cart:", JSON.stringify(existingCart, null, 2));
         cart = await Cart.findOneAndUpdate(
           {
             userId,
@@ -220,7 +224,9 @@ export const updateQuantity = asyncWrapper(
         );
       }
 
-      // Get populated cart with necessary fields only
+      // Optionally recalculate totals here if not handled in model
+      // await cart.recalculateTotals?.();
+
       const populatedCart = await Cart.findById(cart._id).populate<{
         items: PopulatedCartItem[];
       }>("items.productId", "_id name price image");
@@ -228,6 +234,7 @@ export const updateQuantity = asyncWrapper(
       if (!populatedCart) {
         return next(new CustomError(404, "Cart not found"));
       }
+
       const cartItems = mapCartItemsToResponse(populatedCart.items);
 
       return res.status(200).json({

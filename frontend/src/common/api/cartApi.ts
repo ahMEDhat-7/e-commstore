@@ -13,10 +13,7 @@ interface CartResponse {
 }
 
 const cartAPI = axios.create({
-  baseURL:
-    import.meta.env.MODE === "development"
-      ? "http://localhost:7000/api/cart"
-      : "/api/cart",
+  baseURL: "http://localhost:7000/api/cart",
   withCredentials: true,
 });
 
@@ -57,6 +54,8 @@ export const updateCartItem = async (
 ): Promise<CartResponse> => {
   try {
     const res = await cartAPI.put(`/${productId}`, { quantity });
+    console.log(res);
+
     return res.data;
   } catch (error) {
     throw handleApiError(error);

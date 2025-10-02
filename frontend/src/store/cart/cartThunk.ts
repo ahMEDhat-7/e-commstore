@@ -51,7 +51,10 @@ export const updateCartItemThunk = createAsyncThunk(
       if (quantity < 0) {
         throw new Error("Quantity cannot be negative");
       }
+
       const response = await updateCartItem(productId, quantity);
+      console.log(response);
+      
       return response;
     } catch (error) {
       return rejectWithValue(handleError(error));

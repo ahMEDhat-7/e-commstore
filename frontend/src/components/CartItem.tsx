@@ -18,12 +18,12 @@ const CartItem = ({ item }: { item: CartItemType }) => {
       if (isUpdating || newQuantity === quantityItem) return;
       setIsUpdating(true);
       try {
-        await dispatch(
+        dispatch(
           updateCartItemThunk({
             productId: item._id,
             quantity: newQuantity,
           })
-        ).unwrap();
+        );
         setQuantityItem(newQuantity);
       } catch (error) {
         // Revert to previous quantity if update fails
@@ -39,7 +39,7 @@ const CartItem = ({ item }: { item: CartItemType }) => {
     if (isUpdating) return;
     setIsUpdating(true);
     try {
-      await dispatch(removeCartItemThunk(item._id)).unwrap();
+      dispatch(removeCartItemThunk(item._id));
     } finally {
       setIsUpdating(false);
     }
