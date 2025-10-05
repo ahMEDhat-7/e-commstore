@@ -8,8 +8,7 @@ import { CustomError } from "../utils/customError";
 export const createCheckoutSession = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { products, couponCode } = req.body;
-
+      const { products } = req.body;
       if (!Array.isArray(products) || products.length === 0) {
         return res
           .status(400)
@@ -19,14 +18,14 @@ export const createCheckoutSession = asyncWrapper(
       let totalAmount = 0;
 
       const lineItems = products.map((product) => {
-        const amount = Math.round(product.price * 100);
+        const amount = Math.round(product.productId.price * 100);
         totalAmount += amount * product.quantity;
         return {
           price_data: {
             currency: "EGP",
             product_data: {
-              name: product.name,
-              images: [product.image],
+              name: product.productId.name,
+              images: [product.productId.image],
             },
             unit_amount: amount,
           },
@@ -35,19 +34,6 @@ export const createCheckoutSession = asyncWrapper(
       });
 
       const user = (req as any)["user"];
-      let coupon = null;
-      if (couponCode) {
-        coupon = await Coupon.findOne({
-          code: couponCode,
-          userId: user._id,
-          isActive: true,
-        });
-        if (coupon) {
-          totalAmount -= Math.round(
-            (totalAmount * coupon.discountPercentage) / 100
-          );
-        }
-      }
 
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
@@ -55,32 +41,21 @@ export const createCheckoutSession = asyncWrapper(
         mode: "payment",
         success_url: `${process.env.CLIENT_URL}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${process.env.CLIENT_URL}/purchase-cancel`,
-        discounts: coupon
-          ? [
-              {
-                coupon: await createStripeCoupon(coupon.discountPercentage),
-              },
-            ]
-          : [],
         metadata: {
           userId: user._id.toString(),
-          couponCode: couponCode || "",
           products: JSON.stringify(
             products.map((p) => ({
               id: p._id,
               quantity: p.quantity,
-              price: p.price,
+              price: p.productId.price,
             }))
           ),
         },
       });
 
-      if (totalAmount >= 20000) {
-        await createNewCoupon(user._id);
-      }
       res.status(200).json({ id: session.id, totalAmount: totalAmount / 100 });
     } catch (error) {
-      return next(new CustomError(500, "Server error"));
+      return next(new CustomError(500, "Server error" + error));
     }
   }
 );
@@ -92,18 +67,6 @@ export const checkoutSuccess = asyncWrapper(
       const session = await stripe.checkout.sessions.retrieve(sessionId);
 
       if (session.payment_status === "paid") {
-        if (session?.metadata?.couponCode) {
-          await Coupon.findOneAndUpdate(
-            {
-              code: session.metadata.couponCode,
-              userId: session.metadata.userId,
-            },
-            {
-              isActive: false,
-            }
-          );
-        }
-
         // create a new Order
         if (!session.metadata) {
           throw new Error("Session metadata is missing");
@@ -134,27 +97,3 @@ export const checkoutSuccess = asyncWrapper(
     }
   }
 );
-
-async function createStripeCoupon(discountPercentage: number) {
-  const coupon = await stripe.coupons.create({
-    percent_off: discountPercentage,
-    duration: "once",
-  });
-
-  return coupon.id;
-}
-
-async function createNewCoupon(userId: string) {
-  await Coupon.findOneAndDelete({ userId });
-
-  const newCoupon = new Coupon({
-    code: "GIFT" + Math.random().toString(36).substring(2, 8).toUpperCase(),
-    discountPercentage: 10,
-    expirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-    userId: userId,
-  });
-
-  await newCoupon.save();
-
-  return newCoupon;
-}

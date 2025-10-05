@@ -1,27 +1,24 @@
 import { Minus, Plus, Trash } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import type { AppDispatch } from "../store/store";
 import {
   removeCartItemThunk,
   updateCartItemThunk,
 } from "../store/cart/cartThunk";
 import { useState } from "react";
-import type { CartItemType } from "../common/types/Cart";
-import { selectProducts } from "../store/product/productSlice";
+import type { CartItem } from "../common/types/Cart";
 
-const CartItem = ({ item }: { item: CartItemType }) => {
+const CartItemViewer = ({ item }: { item: CartItem }) => {
   const dispatch = useDispatch<AppDispatch>();
   const [isUpdating, setIsUpdating] = useState(false);
-  const { products } = useSelector(selectProducts);
 
-  const selectedItem = products.find((p) => p._id === item.productId);
   const handleQuantityUpdate = async (newQuantity: number) => {
     if (isUpdating || newQuantity === item.quantity) return;
     setIsUpdating(true);
     try {
       dispatch(
         updateCartItemThunk({
-          productId: item.productId,
+          productId: item.productId._id,
           quantity: newQuantity,
         })
       );
@@ -36,7 +33,7 @@ const CartItem = ({ item }: { item: CartItemType }) => {
     if (isUpdating) return;
     setIsUpdating(true);
     try {
-      dispatch(removeCartItemThunk(item.productId)).unwrap();
+      dispatch(removeCartItemThunk(item.productId._id));
     } catch (error) {
       console.error("Failed to remove item:", error);
     } finally {
@@ -50,8 +47,8 @@ const CartItem = ({ item }: { item: CartItemType }) => {
         <div className="shrink-0 md:order-1">
           <img
             className="h-20 md:h-32 rounded object-cover"
-            src={selectedItem?.image}
-            alt={selectedItem?.name}
+            src={item.productId.image}
+            alt={item.productId.name}
           />
         </div>
 
@@ -78,17 +75,17 @@ const CartItem = ({ item }: { item: CartItemType }) => {
 
           <div className="text-end md:order-4 md:w-32">
             <p className="text-base font-bold text-emerald-400">
-              ${selectedItem?.price}
+              ${item.productId.price}
             </p>
             <p className="text-sm text-gray-400">
-              Total: ${(Number(selectedItem?.price) * item.quantity).toFixed(2)}
+              Total: $ {item.productId.price * item.quantity}
             </p>
           </div>
         </div>
 
         <div className="w-full min-w-0 flex-1 space-y-4 md:order-2 md:max-w-md">
           <p className="text-base font-medium text-white hover:text-emerald-400 hover:underline">
-            {selectedItem?.name}
+            {item.productId.name}
           </p>
           <button
             onClick={handleRemoveItem}
@@ -103,4 +100,4 @@ const CartItem = ({ item }: { item: CartItemType }) => {
   );
 };
 
-export default CartItem;
+export default CartItemViewer;

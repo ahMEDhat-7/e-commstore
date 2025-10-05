@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, ShoppingCart } from "lucide-react";
-import CartItem from "../components/CartItem";
 import PeopleAlsoBought from "../components/PeopleAlsoBought";
 import OrderSummary from "../components/OrderSummary";
 import type { AppDispatch } from "../store/store";
 import { useDispatch, useSelector } from "react-redux";
 import { getCartThunk } from "../store/cart/cartThunk";
 import { selectCart } from "../store/cart/cartSlice";
+import CartItemViewer from "../components/CartItem";
 
 const Cart = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -53,7 +53,7 @@ const Cart = () => {
               ) : (
                 <div className="space-y-6">
                   {items.map((item) => (
-                    <CartItem key={item.productId} item={item} />
+                    <CartItemViewer key={item.productId._id} item={item} />
                   ))}
                 </div>
               )}

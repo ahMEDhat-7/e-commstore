@@ -2,35 +2,26 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Loader2, MoveRight, AlertCircle } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { useState, useCallback } from "react";
-import type { AppDispatch } from "../store/store";
 import { selectCart } from "../store/cart/cartSlice";
 import { selectAuth } from "../store/auth/authSlice";
 import { createCheckoutSession } from "../common/api/paymentApi";
-import type { CartItemType } from "../common/types/Cart";
-import { selectProducts } from "../store/product/productSlice";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUB_KEY);
 
 const OrderSummary = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
-  const { loading, error, items } = useSelector(selectCart);
-  const { products } = useSelector(selectProducts);
+  const {
+    loading: cartLoading,
+    error: cartError,
+    items,
+    total,
+  } = useSelector(selectCart);
   const { user } = useSelector(selectAuth);
 
-  const selectedItems = items.map((item) => {
-    console.log(item);
-
-    return {
-      ...item,
-      ...products.find((p) => p._id === item.productId),
-    };
-  });
-  console.log(selectedItems);
-
-  // Memoize the payment handler
+  const formattedTotal = total.toFixed(2);
 
   const handlePayment = useCallback(async () => {
     if (!user) {
@@ -48,21 +39,15 @@ const OrderSummary = () => {
 
     try {
       const stripe = await stripePromise;
-      if (!stripe) {
-        throw new Error("Payment system is currently unavailable");
-      }
+      if (!stripe) throw new Error("Payment system is currently unavailable");
 
-      const response = await createCheckoutSession({
-        products: items,
-      });
-
+      const response = await createCheckoutSession({ products: items });
       const result = await stripe.redirectToCheckout({
         sessionId: response.id,
       });
 
-      if (result.error) {
+      if (result.error)
         throw new Error(result.error.message || "Payment initiation failed");
-      }
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Payment processing failed";
@@ -80,28 +65,20 @@ const OrderSummary = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
+      {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-emerald-400">
           Order Summary
         </h2>
-        {loading && (
+        {cartLoading && (
           <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
         )}
       </div>
 
-      {/* <div className="space-y-4">
+      {/* Price Summary */}
+      <div className="space-y-4">
         <AnimatePresence mode="wait">
           <div className="space-y-2">
-            <dl className="flex items-center justify-between gap-4">
-              <dt className="text-base font-normal text-gray-300">
-                Subtotal ({items.length} {items.length === 1 ? "item" : "items"}
-                )
-              </dt>
-              <dd className="text-base font-medium text-white">
-                ${formattedSubtotal}
-              </dd>
-            </dl>
-
             <dl className="flex items-center justify-between gap-4 border-t border-gray-600 pt-2">
               <dt className="text-base font-bold text-white">Total</dt>
               <dd className="text-base font-bold text-emerald-400">
@@ -111,6 +88,7 @@ const OrderSummary = () => {
           </div>
         </AnimatePresence>
 
+        {/* Error Message */}
         <AnimatePresence>
           {(checkoutError || cartError) && (
             <motion.div
@@ -125,10 +103,11 @@ const OrderSummary = () => {
           )}
         </AnimatePresence>
 
+        {/* Checkout Button */}
         <motion.button
-          className={`flex w-full items-center justify-center rounded-lg px-5 py-2.5 text-sm font-medium
-            text-white focus:outline-none focus:ring-4 focus:ring-emerald-300 disabled:cursor-not-allowed 
-            transition-all duration-200 ${
+          className={`flex w-full items-center justify-center rounded-lg px-5 py-2.5 text-sm font-medium text-white 
+            focus:outline-none focus:ring-4 focus:ring-emerald-300 disabled:cursor-not-allowed transition-all duration-200
+            ${
               isProcessing || cartLoading || !user
                 ? "bg-emerald-600/50"
                 : "bg-emerald-600 hover:bg-emerald-700"
@@ -154,6 +133,7 @@ const OrderSummary = () => {
           )}
         </motion.button>
 
+        {/* Continue Shopping */}
         <div className="flex items-center justify-center gap-2">
           <span className="text-sm font-normal text-gray-400">or</span>
           <Link
@@ -167,8 +147,9 @@ const OrderSummary = () => {
             />
           </Link>
         </div>
-      </div> */}
+      </div>
     </motion.div>
   );
 };
+
 export default OrderSummary;

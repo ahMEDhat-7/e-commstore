@@ -7,29 +7,39 @@ import {
   clearCartThunk,
 } from "./cartThunk";
 import type { RootState } from "../store";
-import type { Cart, CartState } from "../../common/types/Cart";
+import type { Cart, CartItem, CartState } from "../../common/types/Cart";
 
 const initialState: CartState = {
   items: [],
+  total: 0,
   loading: false,
   error: null,
 };
 
+const calculateTotal = (items: CartItem[]): number => {
+  return items.reduce(
+    (sum, item) => sum + item.productId.price * item.quantity,
+    0
+  );
+};
 const cartSlice = createSlice({
   name: "cart",
   initialState,
   reducers: {},
   extraReducers: (builder) => {
+    const handleFulfilled = (state: CartState, action: PayloadAction<Cart>) => {
+      state.loading = false;
+      state.items = action.payload.items;
+      state.total = calculateTotal(state.items);
+    };
+
     // ---- getCart ----
     builder
       .addCase(getCartThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(getCartThunk.fulfilled, (state, action: PayloadAction<Cart>) => {
-        state.loading = false;
-        state.items = action.payload.items;
-      })
+      .addCase(getCartThunk.fulfilled, handleFulfilled)
       .addCase(getCartThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
@@ -41,13 +51,7 @@ const cartSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(
-        addCartItemThunk.fulfilled,
-        (state, action: PayloadAction<Cart>) => {
-          state.loading = false;
-          state.items = action.payload.items;
-        }
-      )
+      .addCase(addCartItemThunk.fulfilled, handleFulfilled)
       .addCase(addCartItemThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
@@ -59,13 +63,7 @@ const cartSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(
-        updateCartItemThunk.fulfilled,
-        (state, action: PayloadAction<Cart>) => {
-          state.loading = false;
-          state.items = action.payload.items;
-        }
-      )
+      .addCase(updateCartItemThunk.fulfilled, handleFulfilled)
       .addCase(updateCartItemThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
@@ -77,13 +75,7 @@ const cartSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(
-        removeCartItemThunk.fulfilled,
-        (state, action: PayloadAction<Cart>) => {
-          state.loading = false;
-          state.items = action.payload.items;
-        }
-      )
+      .addCase(removeCartItemThunk.fulfilled, handleFulfilled)
       .addCase(removeCartItemThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
@@ -95,13 +87,11 @@ const cartSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(
-        clearCartThunk.fulfilled,
-        (state, action: PayloadAction<Cart>) => {
-          state.loading = false;
-          state.items = [];
-        }
-      )
+      .addCase(clearCartThunk.fulfilled, (state) => {
+        state.loading = false;
+        state.items = [];
+        state.total = 0;
+      })
       .addCase(clearCartThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;

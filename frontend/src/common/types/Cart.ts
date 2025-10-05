@@ -14,6 +14,7 @@ export interface Cart {
 
 export interface CartState {
   items: CartItem[];
+  total: number;
   loading: boolean;
   error: string | null;
 }
