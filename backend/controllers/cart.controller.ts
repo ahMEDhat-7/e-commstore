@@ -3,206 +3,155 @@ import Cart from "../models/cart.model";
 import Product from "../models/product.model";
 import asyncWrapper from "../middlewares/asyncWrapper";
 import { CustomError } from "../utils/customError";
-
-interface PopulatedCartItem {
-  productId: {
-    _id: string;
-    name: string;
-    price: number;
-    image: string;
-  };
-  quantity: number;
-}
-
-interface CartItemResponse {
-  _id: string;
-  name: string;
-  price: number;
-  image: string;
-  quantity: number;
-}
-
-const mapCartItemsToResponse = (
-  items: PopulatedCartItem[]
-): CartItemResponse[] => {
-  return items.map((item) => ({
-    _id: item.productId._id,
-    name: item.productId.name,
-    price: item.productId.price,
-    image: item.productId.image,
-    quantity: item.quantity,
-  }));
-};
-
-export const getCartProducts = asyncWrapper(
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const userId = (req as any).user._id;
-      const cart = await Cart.findOne({ userId }).populate<{
-        items: PopulatedCartItem[];
-      }>("items.productId", "_id name price image");
-
-      if (!cart) {
-        return res.status(200).json({ cartItems: [], subtotal: 0, total: 0 });
-      }
-
-      const cartItems = mapCartItemsToResponse(cart.items);
-
-      return res.status(200).json({
-        cartItems,
-        subtotal: cart.subtotal,
-        total: cart.total,
-      });
-    } catch (error) {
-      console.error("Error in getCartProducts controller:", error);
-      return next(new CustomError(500, "Server error"));
-    }
-  }
-);
-
+/**
+ * @desc Add product to cart (create if not exists)
+ * @route POST /api/cart
+ */
 export const addToCart = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = (req as any).user._id;
-      const { productId, quantity = 1 } = req.body;
+      const userId = (req as any)["user"];
+      const { productId, quantity } = req.body;
 
-      if (!productId) {
-        return next(new CustomError(400, "Product ID is required"));
-      }
+      let cart = await Cart.findOne({ userId });
 
-      if (quantity < 1) {
-        return next(new CustomError(400, "Quantity must be at least 1"));
-      }
-
-      // Use findById with projection to optimize query
-      const product = await Product.findById(productId).select("_id");
-      if (!product) {
-        return next(new CustomError(404, "Product not found"));
-      }
-
-      // First, try to find the existing cart and update quantity if item exists
-      let cart = await Cart.findOneAndUpdate(
-        {
-          userId,
-          "items.productId": productId,
-        },
-        {
-          $inc: {
-            "items.$.quantity": quantity,
-          },
-        },
-        {
-          new: true,
-        }
-      );
-
-      // If cart doesn't exist or item is not in cart, create/update it
       if (!cart) {
-        cart = await Cart.findOneAndUpdate(
-          { userId },
-          {
-            $setOnInsert: { userId },
-            $push: {
-              items: { productId, quantity },
-            },
-          },
-          {
-            new: true,
-            upsert: true,
-          }
+        cart = new Cart({
+          userId,
+          items: [{ productId, quantity }],
+        });
+      } else {
+        const existingItem = cart.items.find(
+          (item: any) => item.productId.toString() === productId
         );
 
-        // Get populated cart with necessary fields only
-        const populatedCart = await Cart.findById(cart?._id).populate<{
-          items: PopulatedCartItem[];
-        }>("items.productId", "_id name price image");
-
-        if (!populatedCart) {
-          return next(new CustomError(404, "Cart not found"));
+        if (existingItem) {
+          existingItem.quantity += quantity;
+        } else {
+          cart.items.push({ productId, quantity });
         }
-
-        const cartItems = mapCartItemsToResponse(populatedCart.items);
-
-        return res.status(201).json({
-          cartItems,
-          subtotal: populatedCart.subtotal,
-          total: populatedCart.total,
-        });
       }
-    } catch (error) {
-      console.error("Error in addToCart controller:", error);
-      return next(new CustomError(500, "Server error"));
+
+      await cart.save();
+      const populatedCart = await cart.populate("items.productId");
+
+      return res.status(200).json({
+        message: "Item added to cart",
+        cart: populatedCart,
+      });
+    } catch (error: any) {
+      return next(new CustomError(500, error.message));
     }
   }
 );
 
-export const removeFromCart = asyncWrapper(
+/**
+ * @desc Get user cart (with product data)
+ * @route GET /api/cart
+ */
+export const getCartProducts = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = (req as any).user._id;
-      const { productId } = req.body;
+      const userId = (req as any)["user"];
+      const cart = await Cart.findOne({ userId }).populate("items.productId");
 
-      // Use findOneAndUpdate to handle race conditions
-      const cart = await Cart.findOneAndUpdate(
+      if (!cart) {
+        return res.status(404).json({ message: "Cart not found" });
+      }
+
+      return res.status(200).json({
+        message: "Cart fetched successfully",
+        cart,
+      });
+    } catch (error: any) {
+      return next(new CustomError(500, error.message));
+    }
+  }
+);
+
+/**
+ * @desc Update quantity of a product in the cart
+ * @route PATCH /api/cart
+ */
+export const updateCartItem = asyncWrapper(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = (req as any)["user"];
+      const { productId, quantity } = req.body;
+
+      const cart = await Cart.findOne({ userId });
+      if (!cart) return next(new CustomError(404, "Cart not found"));
+
+      const item = cart.items.find(
+        (item: any) => item.productId.toString() === productId
+      );
+      if (!item) return next(new CustomError(404, "Item not found in cart"));
+
+      item.quantity = quantity;
+      await cart.save();
+
+      const populatedCart = await cart.populate("items.productId");
+      return res.status(200).json({
+        message: "Cart item updated",
+        cart: populatedCart,
+      });
+    } catch (error: any) {
+      return next(new CustomError(500, error.message));
+    }
+  }
+);
+
+/**
+ * @desc Remove a product from the cart
+ * @route DELETE /api/cart/:productId
+ */
+export const removeCartItem = asyncWrapper(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = (req as any)["user"];
+      const { productId } = req.params;
+
+      const updatedCart = await Cart.findOneAndUpdate(
         { userId },
-        productId
-          ? { $pull: { items: { productId } } }
-          : { $set: { items: [] } },
+        { $pull: { items: { productId } } },
+        { new: true }
+      ).populate("items.productId");
+
+      if (!updatedCart)
+        return next(new CustomError(404, "Cart not found or item missing"));
+
+      return res.status(200).json({
+        message: "Item removed from cart",
+        cart: updatedCart,
+      });
+    } catch (error: any) {
+      return next(new CustomError(500, error.message));
+    }
+  }
+);
+
+/**
+ * @desc Clear all items from the user's cart
+ * @route DELETE /api/cart
+ */
+export const clearCart = asyncWrapper(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = (req as any)["user"];
+      const clearedCart = await Cart.findOneAndUpdate(
+        { userId },
+        { $set: { items: [] } },
         { new: true }
       );
 
-      if (!cart) {
-        return next(new CustomError(404, "Cart not found"));
-      }
-
-      // Get populated cart with necessary fields only
-      const populatedCart = await Cart.findById(cart._id).populate<{
-        items: PopulatedCartItem[];
-      }>("items.productId", "_id name price image");
-
-      if (!populatedCart) {
-        return next(new CustomError(404, "Cart not found"));
-      }
-      const cartItems = mapCartItemsToResponse(populatedCart.items);
+      if (!clearedCart) return next(new CustomError(404, "Cart not found"));
 
       return res.status(200).json({
-        cartItems,
-        subtotal: populatedCart.subtotal,
-        total: populatedCart.total,
+        message: "Cart cleared successfully",
+        cart: clearedCart,
       });
-    } catch (error) {
-      console.error("Error in removeFromCart controller:", error);
-      return next(new CustomError(500, "Server error"));
-    }
-  }
-);
-
-export const updateQuantity = asyncWrapper(
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { id } = req.params;
-      const { quantity } = req.body;
-
-      const userId = (req as any).user._id;
-      const updated = await Cart.findOneAndUpdate(
-        {
-          userId: userId,
-          "items.productId": id,
-        },
-        {
-          $set: {
-            "items.$.quantity": quantity,
-          },
-        },
-        {
-          new: true, // Return updated document
-          runValidators: true,
-        }
-      );
-
-      return res.status(200).json({ updated });
-    } catch (error) {
-      return next(new CustomError(500, "Server error" + error));
+    } catch (error: any) {
+      return next(new CustomError(500, error.message));
     }
   }
 );

@@ -3,12 +3,6 @@ export interface User {
   username: string;
   email: string;
   role: string;
-  cartItems: [
-    {
-      quantity: number;
-      product: string;
-    }
-  ];
 }
 
 export interface AuthState {

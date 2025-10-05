@@ -11,54 +11,54 @@ import {
 } from "../../common/api/productApi";
 
 export const getProducts = createAsyncThunk("product/getProducts", async () => {
-  return await fetchProducts();
+  return fetchProducts();
 });
 
 export const getProductById = createAsyncThunk(
   "product/getProductById",
   async (id: string) => {
-    return await fetchProductById(id);
+    return fetchProductById(id);
   }
 );
 
 export const addProduct = createAsyncThunk(
   "product/addProduct",
   async (product: any) => {
-    return await createProduct(product);
+    return createProduct(product);
   }
 );
 
 export const editProduct = createAsyncThunk(
   "product/editProduct",
   async ({ id }: { id: string }) => {
-    return await updateProduct(id);
+    return updateProduct(id);
   }
 );
 
 export const removeProduct = createAsyncThunk(
   "product/removeProduct",
   async (id: string) => {
-    return await deleteProduct(id);
+    return deleteProduct(id);
   }
 );
 
 export const getFeaturedProducts = createAsyncThunk(
   "product/getFeaturedProducts",
   async () => {
-    return await fetchFeaturedProducts();
+    return fetchFeaturedProducts();
   }
 );
 
 export const getProductsByCategory = createAsyncThunk(
   "product/getProductsByCategory",
   async (category: string) => {
-    return await fetchProductsByCategory(category);
+    return fetchProductsByCategory(category);
   }
 );
 
 export const getRecommendedProducts = createAsyncThunk(
   "product/getRecommendedProducts",
   async () => {
-    return await fetchRecommendedProducts();
+    return fetchRecommendedProducts();
   }
 );

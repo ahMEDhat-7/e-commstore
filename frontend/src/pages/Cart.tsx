@@ -4,21 +4,14 @@ import { Loader2, ShoppingCart } from "lucide-react";
 import CartItem from "../components/CartItem";
 import PeopleAlsoBought from "../components/PeopleAlsoBought";
 import OrderSummary from "../components/OrderSummary";
-import GiftCouponCard from "../components/GiftCouponCard";
-import type { AppDispatch, RootState } from "../store/store";
+import type { AppDispatch } from "../store/store";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
 import { getCartThunk } from "../store/cart/cartThunk";
+import { selectCart } from "../store/cart/cartSlice";
 
 const Cart = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { items, loading, error } = useSelector(
-    (state: RootState) => state.cart
-  );
-
-  useEffect(() => {
-    dispatch(getCartThunk());
-  }, [dispatch]);
+  const { items, loading, error } = useSelector(selectCart);
 
   if (loading) {
     return (
@@ -60,7 +53,7 @@ const Cart = () => {
               ) : (
                 <div className="space-y-6">
                   {items.map((item) => (
-                    <CartItem key={item._id} item={item} />
+                    <CartItem key={item.productId} item={item} />
                   ))}
                 </div>
               )}
@@ -79,7 +72,6 @@ const Cart = () => {
                 transition={{ duration: 0.5 }}
               >
                 <OrderSummary />
-                <GiftCouponCard />
               </motion.div>
             )}
           </AnimatePresence>

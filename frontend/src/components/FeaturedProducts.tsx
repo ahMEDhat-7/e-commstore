@@ -3,7 +3,7 @@ import { ShoppingCart, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Product } from "../common/types/Product";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "../store/store";
-import {  addCartItemThunk } from "../store/cart/cartThunk";
+import { addCartItemThunk } from "../store/cart/cartThunk";
 
 const FeaturedProducts = ({
   featuredProducts,
@@ -78,7 +78,10 @@ const FeaturedProducts = ({
                       <button
                         onClick={() =>
                           dispatch(
-                            addCartItemThunk({ productId: product._id, quantity: 1 })
+                            addCartItemThunk({
+                              productId: product._id,
+                              quantity: 1,
+                            })
                           )
                         }
                         className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-4 rounded transition-colors duration-300 

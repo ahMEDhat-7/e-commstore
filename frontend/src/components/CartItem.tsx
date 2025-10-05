@@ -1,45 +1,48 @@
 import { Minus, Plus, Trash } from "lucide-react";
-import type { CartItemType } from "../store/cart/cartSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch } from "../store/store";
 import {
   removeCartItemThunk,
   updateCartItemThunk,
 } from "../store/cart/cartThunk";
-import { useCallback, useState } from "react";
+import { useState } from "react";
+import type { CartItemType } from "../common/types/Cart";
+import { selectProducts } from "../store/product/productSlice";
 
 const CartItem = ({ item }: { item: CartItemType }) => {
   const dispatch = useDispatch<AppDispatch>();
   const [isUpdating, setIsUpdating] = useState(false);
+  const { products } = useSelector(selectProducts);
 
-  const handleQuantityUpdate = useCallback(
-    async (newQuantity: number) => {
-      if (isUpdating || newQuantity === item.quantity) return;
-      setIsUpdating(true);
-      try {
-        await dispatch(
-          updateCartItemThunk({ productId: item._id, quantity: newQuantity })
-        ).unwrap();
-      } catch (error) {
-        console.error("Failed to update item:", error);
-      } finally {
-        setIsUpdating(false);
-      }
-    },
-    [dispatch, item._id, item.quantity, isUpdating]
-  );
+  const selectedItem = products.find((p) => p._id === item.productId);
+  const handleQuantityUpdate = async (newQuantity: number) => {
+    if (isUpdating || newQuantity === item.quantity) return;
+    setIsUpdating(true);
+    try {
+      dispatch(
+        updateCartItemThunk({
+          productId: item.productId,
+          quantity: newQuantity,
+        })
+      );
+    } catch (error) {
+      console.error("Failed to update item:", error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
-  const handleRemoveItem = useCallback(async () => {
+  const handleRemoveItem = () => {
     if (isUpdating) return;
     setIsUpdating(true);
     try {
-      await dispatch(removeCartItemThunk(item._id)).unwrap();
+      dispatch(removeCartItemThunk(item.productId)).unwrap();
     } catch (error) {
       console.error("Failed to remove item:", error);
     } finally {
       setIsUpdating(false);
     }
-  }, [dispatch, item._id, isUpdating]);
+  };
 
   return (
     <div className="rounded-lg border p-4 shadow-sm border-gray-700 bg-gray-800 md:p-6">
@@ -47,8 +50,8 @@ const CartItem = ({ item }: { item: CartItemType }) => {
         <div className="shrink-0 md:order-1">
           <img
             className="h-20 md:h-32 rounded object-cover"
-            src={item.image}
-            alt={item.name}
+            src={selectedItem?.image}
+            alt={selectedItem?.name}
           />
         </div>
 
@@ -75,17 +78,17 @@ const CartItem = ({ item }: { item: CartItemType }) => {
 
           <div className="text-end md:order-4 md:w-32">
             <p className="text-base font-bold text-emerald-400">
-              ${item.price}
+              ${selectedItem?.price}
             </p>
             <p className="text-sm text-gray-400">
-              Total: ${(Number(item.price) * item.quantity).toFixed(2)}
+              Total: ${(Number(selectedItem?.price) * item.quantity).toFixed(2)}
             </p>
           </div>
         </div>
 
         <div className="w-full min-w-0 flex-1 space-y-4 md:order-2 md:max-w-md">
           <p className="text-base font-medium text-white hover:text-emerald-400 hover:underline">
-            {item.name}
+            {selectedItem?.name}
           </p>
           <button
             onClick={handleRemoveItem}

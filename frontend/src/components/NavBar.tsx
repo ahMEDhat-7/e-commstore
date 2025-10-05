@@ -2,15 +2,17 @@ import { ShoppingCart, UserPlus, LogIn, LogOut, Lock } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { selectAuth } from "../store/auth/authSlice";
-import type { AppDispatch, RootState } from "../store/store";
+import type { AppDispatch } from "../store/store";
 import { logoutThunk } from "../store/auth/authThunk";
+import { selectCart } from "../store/cart/cartSlice";
+import { memo } from "react";
 
 const NavBar = () => {
   const navigate = useNavigate();
   const { user } = useSelector(selectAuth);
   const dispatch = useDispatch<AppDispatch>();
   const isAdmin = user?.role === "admin";
-  const { items } = useSelector((state: RootState) => state.cart);
+  const { items } = useSelector(selectCart);
 
   const handleLogout = () => {
     dispatch(logoutThunk());
@@ -102,4 +104,4 @@ const NavBar = () => {
   );
 };
 
-export default NavBar;
+export default memo(NavBar);

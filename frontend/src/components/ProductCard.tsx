@@ -4,24 +4,21 @@ import { useState } from "react";
 import type { AppDispatch } from "../store/store";
 import type { Product } from "../common/types/Product";
 import { addCartItemThunk } from "../store/cart/cartThunk";
-
-import type { RootState } from "../store/store";
 import { selectAuth } from "../store/auth/authSlice";
+import { selectCart } from "../store/cart/cartSlice";
 
 const ProductCard = ({ product }: { product: Product }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector(selectAuth);
-  const { items: cartItems, loading } = useSelector(
-    (state: RootState) => state.cart
-  );
-  const isInCart = cartItems.some((item) => item._id === product._id);
+  const { items: cartItems, loading } = useSelector(selectCart);
+  const isInCart = cartItems.some((item) => item.productId === product._id);
   const [isAdding, setIsAdding] = useState(false);
 
-  const handleAddToCart = async () => {
+  const handleAddToCart = () => {
     if (isAdding || !user || isInCart) return;
     setIsAdding(true);
     try {
-      await dispatch(addCartItemThunk({ product })).unwrap();
+      dispatch(addCartItemThunk({ productId: product._id, quantity: 1 }));
     } catch (error) {
       console.error("Failed to add item to cart:", error);
     } finally {

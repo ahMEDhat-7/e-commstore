@@ -3,44 +3,35 @@ import { Link } from "react-router-dom";
 import { Loader2, MoveRight, AlertCircle } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
 import { useDispatch, useSelector } from "react-redux";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { AppDispatch } from "../store/store";
-import { calculateTotals, selectCart } from "../store/cart/cartSlice";
+import { selectCart } from "../store/cart/cartSlice";
 import { selectAuth } from "../store/auth/authSlice";
 import { createCheckoutSession } from "../common/api/paymentApi";
+import type { CartItemType } from "../common/types/Cart";
+import { selectProducts } from "../store/product/productSlice";
 
-const stripePromise = loadStripe(
-  "pk_test_51SCod6QlyX6I17P3Mkodeo4tHzRY6CBDs9eypPvb5W2t7KZmALoAu4WMiinodNVkgkLge3RjtgecF5Cb8EIY6t0F002bvCajcn"
-);
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUB_KEY);
 
 const OrderSummary = () => {
-  const {
-    total,
-    subtotal,
-    items,
-    coupon,
-    isCouponApplied,
-    loading: cartLoading,
-    error: cartError,
-    lastUpdated,
-  } = useSelector(selectCart);
-
-  const { user } = useSelector(selectAuth);
-  const dispatch = useDispatch<AppDispatch>();
   const [isProcessing, setIsProcessing] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const { loading, error, items } = useSelector(selectCart);
+  const { products } = useSelector(selectProducts);
+  const { user } = useSelector(selectAuth);
 
-  // Recalculate totals when cart items or coupon changes
-  useEffect(() => {
-    dispatch(calculateTotals());
-  }, [items, coupon, isCouponApplied, lastUpdated, dispatch]);
+  const selectedItems = items.map((item) => {
+    console.log(item);
 
-  const savings = subtotal - total;
-  const formattedSubtotal = subtotal.toFixed(2);
-  const formattedTotal = total.toFixed(2);
-  const formattedSavings = savings.toFixed(2);
+    return {
+      ...item,
+      ...products.find((p) => p._id === item.productId),
+    };
+  });
+  console.log(selectedItems);
 
   // Memoize the payment handler
+
   const handlePayment = useCallback(async () => {
     if (!user) {
       setCheckoutError("Please sign in to proceed with checkout");
@@ -63,9 +54,8 @@ const OrderSummary = () => {
 
       const response = await createCheckoutSession({
         products: items,
-        couponCode: coupon?.code,
       });
-      
+
       const result = await stripe.redirectToCheckout({
         sessionId: response.id,
       });
@@ -81,7 +71,7 @@ const OrderSummary = () => {
     } finally {
       setIsProcessing(false);
     }
-  }, [user, items, coupon?.code]);
+  }, [user, items]);
 
   return (
     <motion.div
@@ -94,12 +84,12 @@ const OrderSummary = () => {
         <h2 className="text-xl font-semibold text-emerald-400">
           Order Summary
         </h2>
-        {cartLoading && (
+        {loading && (
           <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
         )}
       </div>
 
-      <div className="space-y-4">
+      {/* <div className="space-y-4">
         <AnimatePresence mode="wait">
           <div className="space-y-2">
             <dl className="flex items-center justify-between gap-4">
@@ -111,36 +101,6 @@ const OrderSummary = () => {
                 ${formattedSubtotal}
               </dd>
             </dl>
-
-            {savings > 0 && (
-              <motion.dl
-                className="flex items-center justify-between gap-4"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-              >
-                <dt className="text-base font-normal text-gray-300">Savings</dt>
-                <dd className="text-base font-medium text-emerald-400">
-                  -${formattedSavings}
-                </dd>
-              </motion.dl>
-            )}
-
-            {coupon && isCouponApplied && (
-              <motion.dl
-                className="flex items-center justify-between gap-4"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-              >
-                <dt className="text-base font-normal text-gray-300">
-                  Coupon ({coupon.code})
-                </dt>
-                <dd className="text-base font-medium text-emerald-400">
-                  -{coupon.discountPercentage}%
-                </dd>
-              </motion.dl>
-            )}
 
             <dl className="flex items-center justify-between gap-4 border-t border-gray-600 pt-2">
               <dt className="text-base font-bold text-white">Total</dt>
@@ -207,7 +167,7 @@ const OrderSummary = () => {
             />
           </Link>
         </div>
-      </div>
+      </div> */}
     </motion.div>
   );
 };

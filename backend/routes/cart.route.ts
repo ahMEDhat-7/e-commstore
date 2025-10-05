@@ -2,16 +2,17 @@ import { Router } from "express";
 import {
   getCartProducts,
   addToCart,
-  removeFromCart,
-  updateQuantity,
+  updateCartItem,
+  removeCartItem,
+  clearCart,
 } from "../controllers/cart.controller";
 
 const router = Router();
 
-// `/api/carts`
-router.route("/").get(getCartProducts).post(addToCart).delete(removeFromCart);
-
-// `/api/carts/:id`
-router.patch("/:id", updateQuantity);
+router.post("/", addToCart);
+router.get("/", getCartProducts);
+router.patch("/", updateCartItem);
+router.delete("/:productId", removeCartItem);
+router.delete("/", clearCart);
 
 export default router;

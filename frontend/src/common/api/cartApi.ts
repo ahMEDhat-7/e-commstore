@@ -1,17 +1,5 @@
 import axios, { AxiosError } from "axios";
 
-interface CartResponse {
-  cartItems: Array<{
-    _id: string;
-    name: string;
-    price: number;
-    image: string;
-    quantity: number;
-  }>;
-  subtotal: number;
-  total: number;
-}
-
 const cartAPI = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL + "/carts",
   withCredentials: true,
@@ -27,54 +15,45 @@ const handleApiError = (error: unknown) => {
   throw error;
 };
 
-export const fetchCart = async (): Promise<CartResponse> => {
+export const fetchCart = async () => {
   try {
-    const res = await cartAPI.get("");
+    const res = await cartAPI.get("/");
+    return res.data;  
+  } catch (error) {
+    throw handleApiError(error);
+  }
+};
+
+export const addToCart = async (productId: string, quantity: number = 1) => {
+  try {
+    const res = await cartAPI.post("/", { productId, quantity });
     return res.data;
   } catch (error) {
     throw handleApiError(error);
   }
 };
 
-export const addToCart = async (
-  productId: string,
-  quantity: number = 1
-): Promise<CartResponse> => {
+export const updateCartItem = async (productId: string, quantity: number) => {
   try {
-    const res = await cartAPI.post("", { productId, quantity });
+    const res = await cartAPI.patch(`/`, { productId, quantity });
     return res.data;
   } catch (error) {
     throw handleApiError(error);
   }
 };
 
-export const updateCartItem = async (
-  productId: string,
-  quantity: number
-): Promise<CartResponse> => {
+export const removeCartItem = async (productId: string) => {
   try {
-    const res = await cartAPI.patch(`/${productId}`, { quantity });
-
+    const res = await cartAPI.delete(`/${productId}`);
     return res.data;
   } catch (error) {
     throw handleApiError(error);
   }
 };
 
-export const removeCartItem = async (
-  productId: string
-): Promise<CartResponse> => {
+export const clearCart = async () => {
   try {
-    const res = await cartAPI.delete("", { data: { productId } });
-    return res.data;
-  } catch (error) {
-    throw handleApiError(error);
-  }
-};
-
-export const clearCart = async (): Promise<CartResponse> => {
-  try {
-    const res = await cartAPI.delete("");
+    const res = await cartAPI.delete("/");
     return res.data;
   } catch (error) {
     throw handleApiError(error);

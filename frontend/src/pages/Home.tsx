@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectProducts } from "../store/product/productSlice";
 import type { AppDispatch } from "../store/store";
 import { getFeaturedProducts } from "../store/product/productThunk";
+import { getCartThunk } from "../store/cart/cartThunk";
 
 const categories = [
   { href: "/jeans", name: "Jeans", imageUrl: "/jeans.jpg" },
@@ -21,8 +22,9 @@ const Home = () => {
   const { products, loading } = useSelector(selectProducts);
 
   useEffect(() => {
+    dispatch(getCartThunk());
     dispatch(getFeaturedProducts());
-  }, [getFeaturedProducts]);
+  }, [dispatch, getFeaturedProducts]);
 
   return (
     <div className="relative min-h-screen text-white overflow-hidden">
